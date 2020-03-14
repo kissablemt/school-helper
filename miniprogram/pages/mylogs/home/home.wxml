@@ -1,0 +1,111 @@
+<!-- <button wx:if="{{canIUse}}" open-type="getUserInfo" bindgetuserinfo="bindGetUserInfo">授权登录</button> -->
+<view class="info-cont">
+  <view class="infoMain">
+    <!--photo-->
+     <!-- bindtap="setPhotoInfo" -->
+    <view class="info-items">
+      <text>头像</text>
+      <view class="infotext">
+        <image wx:if="{{open_id}}" class="userinfo-avatar" src="cloud://envir-i8vdp.656e-envir-i8vdp/avatar/{{open_id}}.jpg" background-size="cover"></image>
+
+      </view>
+    </view> 
+
+    <!--name-->
+    <view class="info-items" bindtap="setName">
+      <text>名字</text>
+      <view class="infotext">
+        <text class="info-motto">{{userInfo.nickname}}</text>
+      </view>
+    </view>
+    <view class='wrapper' hidden="{{hiddenmodalput}}">
+      <view class='shadow'>
+        <view class='popUp'>
+          <view class='title'>修改姓名</view>
+          <form bindsubmit='confirmM'>
+            <view class='content'>
+              <input type='text' name="nickname" placeholder="请输入名字.." auto-focus=''></input>
+            </view>
+            <view class='foot'>
+              <button bindtap='cancelM' class='cancel-btn'>取消</button>
+              <button formType="submit" class='confirm-btn'>确定</button>
+            </view>
+          </form>
+        </view>
+      </view>
+    </view>
+
+
+    <!--school-->
+    <view class="info-items" bindtap='getSchool'>
+      <text>学校</text>
+      <view class="infotext">
+        <text class='info-motto'>{{userInfo.school.name}}</text>
+      </view>
+    </view>
+
+    <!--telphone-->
+    <view class='info-items' bindtap='getContact_way'>
+      <text>联系方式</text>
+      <view class='infotext'>
+        <text class="info-motto">{{userInfo.contact_way}}</text>
+      </view>
+    </view>
+    <view class='wrapper' hidden="{{phonemodalInput}}">
+      <view class='shadow'>
+        <view class='popUp'>
+          <view class='title'>联系方式</view>
+          <form bindsubmit='confirmP'>
+            <view class='content'>
+              <input type='text' name="contact_way" placeholder="请输入联系方式.." auto-focus=''></input>
+            </view>
+            <view class='foot'>
+              <button bindtap='cancelP' class='cancel-btn'>取消</button>
+              <button formType="submit" class='confirm-btn'>确定</button>
+            </view>
+          </form>
+        </view>
+      </view>
+    </view>
+
+
+    <!--
+        @author 星星星
+        @date 2019/5/15
+        @description 暂时没有实现 爱心值 与 信用值的操作 
+      -->
+
+    <!--love_value-->
+    <!-- <view class='info-items'>
+      <text>爱心值</text>
+      <view class='infotext'>
+        <text>{{userInfo.love_value}}</text>
+      </view>
+    </view> -->
+
+    <!--faith_value-->
+    <!-- <view class='info-items'>
+      <text>信用值</text>
+      <view class='infotext'>
+        <text>{{userInfo.faith_value}}</text>     
+      </view>
+    </view> -->
+
+    <!--info-->
+    <view class="info-items" bindtap="getInfo">
+      <text>我的消息<text class='icon-title text-red' wx:if="{{hasNewInfo}}"> </text>
+      </text>
+    </view>
+
+    <!--post-->
+    <view class='info-items' bindtap='getPost'>
+      <text>发布的帖子</text>
+    </view>
+
+    <!--favorite-->
+    <view class='info-items' bindtap='getFavorite'>
+      <text>收藏的帖子</text>
+    </view>
+
+  </view>
+</view>

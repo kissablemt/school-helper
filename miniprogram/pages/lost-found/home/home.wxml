@@ -1,0 +1,80 @@
+<!--miniprogram/pages/lost-found/home/home.wxml-->
+<!-- 搜索框 -->
+<view class="top-box cu-bar search bg-white">
+  <!-- 个人头像 -->
+  <image class="cu-avatar round" wx:if="{{open_id}}" src='cloud://envir-i8vdp.656e-envir-i8vdp/avatar/{{open_id}}.jpg' bindtap='gotoMylogs'></image>
+  <!-- 搜索 -->
+  <view class="search-form round">
+    <text class="icon-search"></text>
+    <input type="text" placeholder="搜索图片、文章、视频" confirm-type="search" bindinput='search'></input>
+  </view>
+  <!-- 学校 -->
+  <!-- bindtap='selectSchool' -->
+  <!-- <text class="icon-triangledownfill"></text> -->
+  <view class="action" >
+    <image class="cu-avatar round" wx:if="{{school_id}}" src='cloud://envir-i8vdp.656e-envir-i8vdp/school_logo/{{school_id}}.jpg'></image>
+  </view>
+</view>
+
+<view class='title-box'>
+  <image wx:if="{{school_id}}" src='cloud://envir-i8vdp.656e-envir-i8vdp/school_logo/{{school_id}}.jpg' mode='widthFix' style='border-radius:50px;overflow:hidden;width:20%;'></image>
+  <view style='margin-left:20px;height:80%;'>
+    <!-- 所在学校 -->
+    <view style='font-size:14px;font-weight:bolder;' wx:if="{{school_name}}">
+      {{school_name}}
+    </view>
+
+    <!-- 所在模块 -->
+    <view style='font-size:18px;font-weight:bold;'>
+      失物招领
+    </view>
+  </view>
+</view>
+
+<view style='margin-bottom:130rpx;'>
+  <view class='post-box'>
+    <view class="cu-card dynamic" style='width:100%;' wx:for="{{nowShowData}}" wx:key="" bindtap="gotoDetail" data-url="{{item.post_id}}" wx:if="{{!item.isHidden}}">
+      <view class="cu-item shadow" style='margin:2% 0;position:relative'>
+
+        <!-- 发帖人信息 -->
+        <view class="cu-list menu-avatar">
+          <view class="cu-item">
+            <!-- 头像 -->
+            <image class="cu-avatar round" src='cloud://envir-i8vdp.656e-envir-i8vdp/avatar/{{item.open_id}}.jpg'></image>
+            <view class="content flex-sub text-sm">
+              <!-- 名字 -->
+              <!-- <view>凯尔</view> -->
+              <view>{{nickname[item.open_id]}}</view>
+              <!-- 日期 -->
+              <view class="text-gray text-sm flex justify-between">
+                {{item.date}}
+              </view>
+            </view>
+          </view>
+        </view>
+
+        <!-- 标题 -->
+        <!-- <view class="text-content">
+          折磨生出苦难，苦难又会加剧折磨，凡间这无穷的循环，将有我来终结！
+        </view> -->
+        <view class="text-content">
+          {{item.headline}}
+        </view>
+        <!-- 帖子首图 -->
+        <view class="grid flex-sub padding-lr" style='height:255px;'>
+          <image src='cloud://envir-i8vdp.656e-envir-i8vdp/image/{{item.image[0]}}.jpg' mode='aspectFill' lazy-load='true'></image>
+        </view>
+
+      </view>
+    </view>
+  </view>
+  <i-load-more tip="暂无数据" loading="{{ false }}" />
+</view>
+
+<!-- 底部导航栏-该发布与外面的发布不同，默认在当前学校，当前模块发布，但可以修改 -->
+<view class="cu-bar tabbar bg-white foot">
+  <view class="action text-gray add-action">
+    <button class="cu-btn icon-add bg-green" bindtap='gotoPublish'></button>
+    发布
+  </view>
+</view>

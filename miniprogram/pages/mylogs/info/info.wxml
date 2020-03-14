@@ -1,0 +1,44 @@
+<!--miniprogram/pages/mylogs/info/info.wxml-->
+<view class='bar shadow' style='height:40px;width:100%;'>
+  <!-- 一鍵全讀 -->
+  <text class='icon-attention' style='position: absolute; left:5%; font-size:15px;' bindtap='readAll'>全读</text>
+
+  <!-- 管理/完成 -->
+  <text class='icon-edit' style='position: absolute; right:5%; font-size:15px;' bindtap='toggleManage'>{{isManaging?'完成':'管理'}}</text>
+  <text class='icon-close' style='position: absolute; right:25%; font-size:15px;' wx:if="{{isManaging}}" bindtap='deleteSelected'>删除</text>
+</view>
+
+<view class='post-box' style='padding:2.5%;'>
+  <!-- wx:for -->
+  <view class="cu-card dynamic"  style='display:flex;flex-direction: row; align-items:center; width:100%' wx:for="{{comment}}" wx:key="" wx:for-item="item">
+
+    <!-- 管理-选中后 -->
+    <view style='width:5%;font-size:18px;margin-right:4%; ' wx:if="{{isManaging}}" data-reply_id='{{item.reply_id}}'  bindtap='toggleSelect'>
+      <!-- 选项-未选中 -->
+      <text class='icon-square' wx:if="{{!item.selected}}"></text>
+      <!-- 选项-选中后 -->
+      <text class='icon-squarecheckfill' wx:else></text>
+    </view>
+
+    <!-- 消息内容 -->
+    <view class="cu-item shadow" style='margin:2% 0;position:relative;  width:100%;' data-post_id='{{item.post_id}}' bindtap='gotoPost'>
+      <view class="text-content">
+        <view class="text-gray text-sm flex justify-between info-items"> 
+          <view class='infoContent'>{{item.date}}</view> 
+          <text class='icon-title text-red infotext'  wx:if="{{item.isNewInfo}}"></text>
+        </view>
+        
+        <text>{{item.content}}</text>
+      </view>
+
+      <!-- 原贴 -->
+      <view class='text-cut' style='margin:2.5%;padding:2.5%;width:95%;background-color:rgb(243,243,243);'>
+        來自：
+        <text>{{item.headline}}</text>
+      </view>
+    </view>
+
+  </view>
+</view>
+
+<i-load-more tip="暂无更多消息" loading="{{ false }}" />

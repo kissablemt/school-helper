@@ -1,0 +1,135 @@
+<!--miniprogram/pages/post-show/post-show.wxml-->
+<view class='container'>
+  <!-- 活动说明 图片轮播 -->
+  <view class="cu-card dynamic">
+    <view class="cu-item shadow" style='margin:2% 0;position:relative'>
+      <!-- 所在分类 -->
+      <view class="cu-tag bg-blue" style='position:absolute;right:2%;top:2%;border-radius: 5px;z-index:9999;'>{{typeName}}</view>
+
+      <!-- 发帖人信息 -->
+      <view class="cu-list menu-avatar">
+        <view class="cu-item">
+          <!-- 头像 -->
+          <image class="cu-avatar round" wx:if="{{post.open_id}}" src='cloud://envir-i8vdp.656e-envir-i8vdp/avatar/{{post.open_id}}.jpg'></image>
+          <view class="content flex-sub text-sm">
+            <!-- 名字 -->
+            <view>{{nickname[post.open_id]}}</view>
+            <!-- 日期 -->
+            <view class="text-gray text-sm flex justify-between">
+              2019年12月3日
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 主要内容 -->
+      <!-- <view class="text-content">
+        折磨生出苦难，苦难又会加剧折磨，凡间这无穷的循环，将有我来终结！
+      </view> -->
+      <view class="text-content">
+        {{post.headline}}
+      </view>
+
+      <!-- 活动图片轮播 -->
+      <swiper class="screen-swiper round-dot" indicator-dots="true" circular="true" style='margin:1% 2%;' wx:if="{{post}}">
+        <swiper-item wx:for="{{post.image}}" wx:key bindtap="previewCarousel" data-img_id='{{item}}'>
+          <image src="cloud://envir-i8vdp.656e-envir-i8vdp/image/{{item}}.jpg" mode="aspectFill"></image>
+        </swiper-item>
+      </swiper>
+      <view style='color:red;' wx:if="{{isDeleted}}">贴主已经删帖子啦。</view>
+      
+      <!-- 联系方式 -->
+      <view class='more-block solid-top'>
+        <text class="icon-title text-green">联系方式：{{post.contact_way}}</text>
+      </view>
+      <!-- 内容补充 -->
+      <view class='more-block solid-top'>
+        <!-- 文字区 -->
+        <text class="text-black">{{post.content}}</text>
+        <text wx:if="{{post.money}}" class="text-price text-red" style='padding:10rpx 0rpx 10rpx 0rpx;'>{{post.money}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 评论区 -->
+  <view class="cu-list menu-avatar comment solids-top" style='border-radius:8px;'>
+    <!-- 标题 -->
+    <view>
+      <view class="cu-bar bg-white margin-top">
+        <view class="action">
+          <text class="icon-title text-orange "></text> 全部回复
+        </view>
+        <view class="action">
+          <text bindtap="showModal" data-target="RadioModal">{{sortBy}}</text>
+          <text class='icon-unfold'></text>
+        </view>
+      </view>
+
+      <!-- 排序方式 -->
+      <view class="cu-modal {{modalName=='RadioModal'?'show':''}}" bindtap="hideModal">
+        <view class="cu-dialog">
+          <radio-group class="block">
+            <view class="cu-list menu text-left">
+              <view class="cu-item" wx:for="{{sortByText}}" wx:key bindtap='getSort' data-target="{{item}}">
+                <label class="flex justify-between align-center flex-sub">
+                  <view class="flex-sub">{{item}}</view>
+                </label>
+              </view>
+            </view>
+          </radio-group>
+        </view>
+      </view>
+    </view>
+
+    <!-- 全部回复 -->
+    <!-- wx：for -->
+    <!-- wx:if="{{index < count}}" 判断显示多少评论 -->
+    <view class="solids-top bgColor" wx:for="{{comment_data}}" wx:key="" wx:if="{{levelIndex < count}}" wx:for-item="level" wx:for-index="levelIndex">
+      <view class='row'>
+        <image class="cu-avatar round" wx:if="{{post.open_id}}" src='cloud://envir-i8vdp.656e-envir-i8vdp/avatar/{{level[0].from_open_id}}.jpg'></image>
+        <view class="text-lg" style='margin:20rpx;'>{{nickname[level[0].from_open_id]}} :</view>
+      </view>
+
+      <view class="content showContent">
+        <view bindtap="replyComment" data-parent_id="{{level[0].reply_id}}" data-to_open_id="{{level[0].from_open_id}}">
+          <view class="text-gray text-content text-df {{level[0].hideOverFlow ? 'showFont-hidePart': 'showFont'}}">
+            {{level[0].content}}
+          </view>
+        </view>
+        <view  class='toggleMore-button' wx:if="{{level[0].hasButton}}"  bindtap='toggleMore' data-reply_id='{{level[0].reply_id}}'>{{level[0].hideOverFlow ? '更多' : '隐藏'}}</view>
+        <!-- 这里的留言需要添加for循环和调样式 -->
+        <view class="bg-grey padding-sm radius margin-top-sm text-sm" wx:if="{{level.length>1 && index && (index<3 || showAll[levelIndex])}}" wx:for="{{level}}" wx:key="" bindtap="replyComment" data-parent_id="{{level[0].reply_id}}" data-to_open_id="{{level[index].from_open_id}}">
+          <view>{{nickname[item.from_open_id]}} @ {{nickname[item.to_open_id]}} :
+            <text style='word-break:break-all;'>{{item.content}}</text>
+          </view>
+
+        </view>
+
+        <view wx:if="{{level.length>3 && !showAll[levelIndex]}}" style="position:absolute;right:20rpx;" bindtap='levelShowMore' data-index="{{levelIndex}}">全部回复</view>
+        <view wx:if="{{showAll[levelIndex]}}" style="position:absolute;right:20rpx;" bindtap='levelShowMore' data-index="{{levelIndex}}">隐藏回复</view>
+
+        <view class="margin-top-sm flex justify-between">
+          <view class="text-gray text-df">{{level[0].date}}</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <i-load-more tip="暂无数据" loading="{{ false }}" />
+</view>
+<!--
+    @author 星星星
+    @date 2019/5/17
+    @description  帖子不存在，不再展示提供发布评论, wx:if="{{post}}"
+  -->
+<view class="cu-bar input foot" style='z-index:9999' wx:if="{{post}}">
+  <view class="action" bindtap='changeColor' wx:if="{{!isReplyComment}}">
+    <text class="icon-like text-grey" wx:if="{{!isFavourite}}"></text>
+    <text class="icon-likefill text-red" wx:else></text>
+  </view>
+
+  <input value="{{inputContent}}" class="solid-bottom" maxlength="300" cursor-spacing="10" bindinput='doInput' focus='{{isReplyComment}}'></input>
+  <button form-type='submit' class="cu-btn bg-green shadow-blur" bindtap='submit'>发送</button>
+</view>
+
+<view style='position:absolute;top:0;width:100%;height:100%;z-index:9998;' wx:if='{{isReplyComment}}' bindtap='replyPost'></view>

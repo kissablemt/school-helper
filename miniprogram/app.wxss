@@ -1,0 +1,110 @@
+@import "colorui/main.wxss";
+@import "colorui/icon.wxss";
+
+/*  */
+.top-box {
+  width:98%;
+  margin: 2% 1%;
+  border-radius: 20rpx;
+  overflow: hidden;
+}
+
+/* 帖子箱 */
+.post-box {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  padding: 0 1%;
+  padding-bottom: 3%;
+}
+
+/* 50%宽度帖子 */
+.post-item-hf {
+  position: relative;
+  width: 50%;
+  padding: 1%;
+  overflow: hidden;
+}
+.post-item-hf .title-box {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 6px 6px;
+  width: 100%;
+  height: 50px;
+}
+.post-item-hf .info-box {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 6px 6px;
+  width: 100%;
+  height: 50px;
+}
+.post-item-hf .title-box text {
+  display: -webkit-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: bold;
+  word-wrap: break-word;
+  white-space: normal !important;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+}
+.post-item-hf .info-box text {
+  display: -webkit-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: bold;
+  word-wrap: break-word;
+  white-space: normal !important;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+}
+
+/* 100%宽度帖子 */
+.post-item {
+  position: relative;
+  width: 100%;
+  padding: 1%;
+  overflow: hidden;
+}
+.post-item .title-box {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 6px 6px;
+  width: 100%;
+  height: 50px;
+}
+.post-item .info-box {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 6px 6px;
+  width: 100%;
+  height: 40px;
+}
+.post-item .title-box text {
+  display: -webkit-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: bold;
+  word-wrap: break-word;
+  white-space: normal !important;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+}
+
+.title-box {
+  position: relative;
+  left:1%;
+  width:98%;
+  height: 100px;
+  background-color: white;
+  border-radius: 8px;
+  padding:2.5%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}

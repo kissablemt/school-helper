@@ -1,0 +1,18 @@
+<!--miniprogram/pages/authorization/authorization.wxml-->
+<view wx:if="{{!isWaiting}}" style='height:100%;width:100%;background-color: rgb(138, 199, 228);'>
+  <view wx:if="{{canIUse}}" style='display: flex;flex-direction: column; justify-content: center;align-items: center;'>
+    <view class='header'>
+      <image src='/images/weChat_logo.jpg'></image>
+    </view>
+
+    <button class='bottom' type='primary' open-type="getUserInfo" lang="zh_CN" bindgetuserinfo="bindGetUserInfo">
+      授权登录
+    </button>
+  </view>
+
+  <view wx:else>请升级微信版本</view>
+</view>
+
+<view wx:else style='height:100%;width:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;'>
+    <image src="https://image.weilanwl.com/gif/loading-1.gif" mode="aspectFit" class="gif-white response" style="height:35%;padding-bottom:10%;"></image>
+</view>

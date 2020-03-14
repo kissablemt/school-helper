@@ -1,0 +1,84 @@
+<!--帖子分类-->
+<view class='invitation' style='border-bottom:1px rgb(243,243,243) solid;'>
+  <view class='info-items showborderTop' bindtap='getInfo'>
+    <text>帖子类型 ：</text>
+    <view class='infotext'>{{post_type_text[post_type]}}</view>
+  </view>
+  <view class='info-items' wx:if="{{post_type<=1}}" open-type="contact">
+    <text>分类 ：</text>
+    <view class='infotext'>{{post_type>1?"无":goods_type_text[goods_type]}}</view>
+  </view>
+</view>
+
+<!--帖子分类选择-->
+<view class='wrap' hidden='{{hiddenmodalput}}'>
+  <view class='shadow'>
+    <view class='popUp'>
+      <view class='title'>帖子分类选择</view>
+      <form bindsubmit='confirmM'>
+        <view class='content'>
+          <picker-view indicator-style="height: 50px;" style="width: 100%; height: 340rpx;" value="{{value}}" bindchange="bindChange">
+            <picker-view-column>
+              <view wx:for="{{post_type_text}}" wx:key style="line-height: 50px">{{item}}</view>
+            </picker-view-column>
+            <picker-view-column>
+              <view wx:if="{{post_type<2}}" wx:for="{{goods_type_text}}" wx:key style="line-height: 50px">{{item}}</view>
+            </picker-view-column>
+          </picker-view>
+          <view class='foot'>
+            <button class='cancel-btn' bindtap='cancelM'>取消</button>
+            <button class='confirm-btn' bindtap='comfirmP'>确定</button>
+          </view>
+        </view>
+      </form>
+    </view>
+  </view>
+</view>
+
+<!--文本输入与图片显示-->
+<view class='items'>
+  <view class='area' style='padding:5%;'>
+    <textarea class='textArea' placeholder='具体内容..' bindinput='input_content'></textarea>
+    <!--添加图片并显示图片-->
+  </view>
+
+  <view class='col3' style='padding-left:{{zWidth-yWidth}};'>
+    <view wx:for="{{imagePaths}}" wx:key="" style='position:relative;'>
+      <image src='{{item}}' style='width:{{imageWidth}}px;height:{{imageWidth}}px;margin-left:{{yWidth}}px;margin-top:{{yWidth}}px' bindtap="enlargeImage" bindlongpress='deleteImage' data-index='{{index}}'></image>
+    </view>
+    <image bindtap="getImageFiles" wx:if="{{imagePaths.length<9}}" src='publish.jpg' style='width:{{imageWidth}}px;height:{{imageWidth}}px;margin-left:{{yWidth}}px;margin-top:{{yWidth}}px'></image>
+  </view>
+
+
+  <!--各类选项-->
+  <view class='invitation ' style='border-top:1px rgb(243,243,243) solid;padding:2% 4%;;'>
+    <view class='info-items showborderTop'>
+      <text class='inTitle'>标题</text>
+      
+      <input class='inContent' type='text' placeholder='帖子标题' bindinput='input_headline'></input>
+    </view>
+    <view class='info-items' wx:if="{{post_type<=1}}"> 
+      <text class='inTitle'>价钱</text>
+      <input class='inContent' type='digit' placeholder='商品价钱' bindinput='input_price'></input>
+    </view>
+    <view class='info-items'>
+      <text class='inTitle'>联系方式</text>
+      <input class='inContent' type='text' placeholder='联系方式' bindinput='input_contact'></input>
+    </view>
+    <!--
+      @author 星星星
+      @date 2019/5/17
+      @description 学校隐藏，理工校园版
+    -->
+    <!-- <view class='info-items' bindtap='changeSchool'>
+      <text style='margin-right:5%;'>所在学校</text>
+      <view class='icon-right' wx:if="{{school_name==null}}"></view>
+      <view wx:else>{{school_name}}</view>
+    </view> -->
+  </view>
+
+
+  <view class='btn'>
+    <button class='btnPublish' bindtap='publish'>发布</button>
+  </view>
+</view>

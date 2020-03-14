@@ -1,0 +1,67 @@
+<!--miniprogram/pages/school/school.wxml-->
+<view wx:if="{{showProvince}}">
+  <view class="top-box cu-list grid col-3 no-border" style='height:100%;'>
+    <view class="cu-item" wx:for="{{provinceName}}" wx:key="" bindtap='getSchools' data-province='{{item}}'>
+      <text>{{item}}</text>
+    </view>
+  </view>
+</view>
+<view wx:else>
+  <view class="cu-bar bg-white search fixed">
+    <view class="action" bindtap='selectProvince'>省份
+      <text class="icon-triangledownfill"></text>
+    </view>
+    <view class="search-form round">
+      <text class="icon-search"></text>
+      <input name="input_keyword" value='' value="{{input_keyword}}" type="text" placeholder="输入搜索的关键词" confirm-type="search" bindinput='form_input_keyword'></input>
+    </view>
+    <view class="action">
+      <button class="cu-btn bg-gradual-green shadow-blur round" bindtap="search">搜索</button>
+    </view>
+  </view>
+
+  <scroll-view scroll-y class="indexes" scroll-into-view="indexes-{{listCurID}}" style="height:calc(100vh - 50px);" scroll-with-animation="true" enable-back-to-top="true">
+    <!-- 常用栏-从缓存读 -->
+    <!-- 
+    <view class="padding">常用</view>
+    <view class="top-box cu-list grid col-3 no-border" style='width:90%;'>
+      <view class="cu-item" wx:for="{{commom_school}}" wx:key="">
+        <view>
+          <image class="cu-avatar round" src="cloud://envir-i8vdp.656e-envir-i8vdp/school_logo/{{item.school_id}}.jpg"></image>
+          <text>{{item.school_name}}</text>
+        </view>
+      </view>
+    </view>
+     -->
+
+    <!-- 26个英文字母开头 -->
+    <block wx:for="{{list}}" wx:key="" wx:for-index="listIndex">
+      <!-- 字母标题 -->
+      <view class="padding indexItem-{{list[listIndex].key}}" id="indexes-{{list[listIndex].key}}" data-index="{{list[listIndex].key}}" wx:if="{{list[listIndex].data.length != 0}}">{{list[listIndex].key}}</view>
+
+      <!-- 内容-需要如{key:'D', data:'东莞理工学院'} -->
+      <view class="top-box cu-list grid col-3 no-border" style='width:90%;' wx:if="{{list[listIndex].data.length != 0}}">
+        <view class="cu-item" wx:for="{{list[listIndex].data}}" wx:key="" wx:for-index="imgIndex" bindtap='selectSchool' data-school_id='{{item.school_id}}' data-school_name='{{item.name}}'>
+          <view>
+            <image class="cu-avatar round" src="cloud://envir-i8vdp.656e-envir-i8vdp/school_logo/{{item.logo}}"  lazy-load='true'></image>
+            <text>{{item.name}}</text>
+          </view>
+        </view>
+      </view>
+
+    </block>
+  </scroll-view>
+
+  <!-- 不用改！ -->
+  <!--右边选择条-->
+  <view class="indexBar" style="height:calc(100vh)">
+    <view class="indexBar-box" bindtouchstart="tStart" bindtouchend="tEnd" catchtouchmove="tMove">
+      <view class="indexBar-item" wx:for="{{list}}" wx:key id="{{index}}" bindtouchstart="getCur" bindtouchend="setCur" wx:if="{{list[index].data.length != 0}}">{{list[index].key}}</view>
+    </view>
+  </view>
+
+  <!--右边选择显示-->
+  <view hidden="{{hidden}}" class="indexToast">
+    {{listCur}}
+  </view>
+</view>

@@ -1,0 +1,11 @@
+/* miniprogram/pages/mylogs/post/post.wxss */
+
+.text-content text {
+  display: -webkit-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-wrap: break-word;
+  white-space: normal !important;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+}

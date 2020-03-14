@@ -1,0 +1,6 @@
+{
+  "usingComponents": {
+    "tabbar": "/components/tabbar/tabbar"
+  },
+  "navigationBarTitleText":"更多功能"
+}

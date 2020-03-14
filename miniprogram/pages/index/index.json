@@ -1,0 +1,6 @@
+{
+  "usingComponents": {
+    "tabbar":"/components/tabbar/tabbar"
+  },
+  "navigationBarTitleText":"校园小助"
+}

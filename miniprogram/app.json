@@ -1,0 +1,52 @@
+{
+  "pages": [
+    
+    "pages/authorization/authorization",
+    "pages/index/index",
+    "pages/product/home/home",
+    "pages/lost-found/home/home",
+    "pages/activity/home/home",
+    "pages/more/more",
+    "pages/school/school", 
+    "pages/mylogs/info/info",
+    "pages/mylogs/post/post",
+    "pages/mylogs/favorite/favorite",
+    "pages/mylogs/home/home",
+    "pages/publish/publish",
+    "pages/post-show/post-show"
+  ],
+  "window": { 
+    "backgroundColor": "#F6F6F6",
+    "backgroundTextStyle": "dark",
+    "navigationBarBackgroundColor": "#F6F6F6",
+    "navigationBarTitleText": "", 
+    "navigationBarTextStyle": "black",
+    "enablePullDownRefresh": true  
+  },
+  "usingComponents": {
+    "cu-custom": "/colorui/components/cu-custom",
+    "i-tabs": "/iviewui/tabs/index",
+    "i-tab": "/iviewui/tab/index",
+    "i-panel": "/iviewui/panel/index",
+    "i-load-more": "/iviewui/load-more/index"
+  },
+  "tabBar": {
+    "color": "#000000",
+    "selectedColor": "#32CD32",
+    "list": [
+      { 
+        "iconPath": "images/tabbar/index.png",
+        "selectedIconPath": "images/tabbar/index_green.png",
+        "pagePath": "pages/index/index",
+        "text": "首页"
+      },
+      {
+        "iconPath": "images/tabbar/more.png",
+        "selectedIconPath": "images/tabbar/more_green.png",
+        "pagePath": "pages/more/more",
+        "text": "更多"
+      }
+    ]
+  },
+  "sitemapLocation": "sitemap.json"
+}

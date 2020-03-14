@@ -1,0 +1,92 @@
+<!--miniprogram/pages/index/index.wxml-->
+
+<view wx:if="{{isWaiting}}" style='height:100%;width:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;background-color: rgb(253, 254, 255);'>
+    <image src="https://image.weilanwl.com/gif/loading-1.gif" mode="aspectFit" class="gif-white response" style="height:35%;padding-bottom:10%;"></image>
+</view>
+
+<!-- 个人 搜索 学校 -->
+<view class="top-box cu-bar search bg-white">
+  <!-- 个人头像 -->
+  <view>
+  <image class="cu-avatar round" wx:if="{{open_id}}" src='cloud://envir-i8vdp.656e-envir-i8vdp/avatar/{{open_id}}.jpg' bindtap='gotoMylogs'></image>
+  <text class='icon-title text-red relative'  wx:if="{{hasNewInfo}}"></text>
+  </view>
+  
+
+
+  <!-- 搜索 -->
+  <view class="search-form round">
+    <text class="icon-search"></text> 
+    <input type="text" placeholder="搜索帖子" confirm-type="search" bindinput='search'></input>
+  </view>
+
+  <!-- 学校 -->
+  <!--
+    @author 星星星
+    @data 2019/5/15
+    @description 去掉触发事件  bindtap='selectSchool' ，莞工校园版不需要
+  -->
+  <view class="action" >
+    <image class="cu-avatar round" wx:if="{{school_id}}" src='cloud://envir-i8vdp.656e-envir-i8vdp/school_logo/{{school_id}}.jpg'></image>
+    <!-- <text class="icon-triangledownfill"></text> -->  <!-- 莞工校园版，不需要 -->
+  </view>
+</view>
+
+<!-- 分类 -->
+<view class="top-box cu-list grid col-5 no-border">
+  <view class="cu-item" wx:for="{{iconList}}" wx:key="" bindtap='selectGoodsType' data-type='{{item.goods_type}}'>
+    <!-- 先留图标，改文字 -->
+    <view> 
+      <image src='{{item.iconPath}}' style='width:24px; height:24px;'></image>
+    </view>
+    <!-- <view class="icon-{{item.icon}} text-{{item.color}}"></view> -->
+    <text>{{item.name}}</text>
+  </view>
+</view>
+
+<view style='margin-bottom:17%;'>
+  <!-- 最新产品展示 -->
+  <view class='post-box' style='margin-bottom:5%;'>
+
+    <!-- wx:for 渲染 -->
+    <view class='post-item-hf' wx:for="{{nowShowData}}" wx:key="" wx:if="{{!item.isHidden}}" bindtap="gotoDetail" data-url='{{item.post_id}}'>
+      <view class="cu-card case">
+        <view class="cu-item" style='margin:0;'>
+          <!-- 所在分类 -->
+          <view class="cu-tag bg-blue" style='position:absolute;right:2%;top:1%;border-radius: 5px;z-index:1000;'>{{goods_type_text[item.goods_type]}}</view>
+
+          <!-- 商品图 -->
+          <view class="image" style='height:150px;overflow:hidden;'>
+            <image wx:if="{{item.image.length}}"  src="cloud://envir-i8vdp.656e-envir-i8vdp/image/{{item.image[0]}}.jpg" mode="widthFix"></image>
+          </view>
+
+          <!-- 商品名称 -->
+          <view class='info-box' style='border-bottom:1px rgb(243,243,243) solid;display:flex;flex-direction:column;align-items:flex-start;'>
+            <text>{{item.headline}}</text>
+            <text class="text-price text-red">{{item.money}}</text>
+          </view>
+
+          <!-- 卖家信息 -->
+          <view class="cu-list menu-avatar">
+            <view class='info-box'>
+              <!-- 头像 -->
+              <image class="cu-avatar round" src='cloud://envir-i8vdp.656e-envir-i8vdp/avatar/{{item.open_id}}.jpg'></image>
+              <!-- 用户名 -->
+              <view class="content flex-sub" style='margin-left:5px;'>
+                <view class="text-black" style='font-weight:bold;font-size:10px;'>{{nickname[item.open_id]}}</view>
+              </view>
+            </view>
+          </view>
+
+        </view>
+      </view>
+    </view>
+
+  </view>
+
+  <i-load-more tip="暂无更多消息" loading="{{ false }}" style="margin-bottom:20%;" />
+</view>
+
+<tabbar tabbar="{{tabbar}}"></tabbar>
+
+

@@ -1,0 +1,15 @@
+/* miniprogram/pages/mylogs/favorite/favorite.wxss */
+.bar {
+  display: flex;
+  align-items: center;
+}
+
+.desc text {
+  display: -webkit-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-wrap: break-word;
+  white-space: normal !important;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}

@@ -1,0 +1,4 @@
+/* miniprogram/pages/more/more.wxss */
+page {
+  background-color: white;
+}

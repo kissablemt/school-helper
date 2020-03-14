@@ -1,0 +1,114 @@
+<!--miniprogram/pages/product/home/home.wxml-->
+<!-- 搜索框 -->
+<view class="top-box cu-bar search bg-white">
+  <!-- 个人头像 -->
+  <image class="cu-avatar round" wx:if="{{open_id}}" src='cloud://envir-i8vdp.656e-envir-i8vdp/avatar/{{open_id}}.jpg' bindtap='gotoMylogs'></image>
+  <!-- 搜索 -->
+  <view class="search-form round">
+    <text class="icon-search"></text>
+    <input type="text" placeholder="搜索图片、文章、视频" confirm-type="search" bindinput='search'></input>
+  </view>
+  <!--
+    @author 星星星
+    @date 2019/5/17
+    @description  bindtap='selectSchool' 去除
+  
+  -->
+  <!-- 学校 -->
+  <view class="action" >
+    <image class="cu-avatar round" wx:if="{{school_id}}" src='cloud://envir-i8vdp.656e-envir-i8vdp/school_logo/{{school_id}}.jpg'></image>
+    <!-- <text class="icon-triangledownfill"></text> -->
+  </view>
+</view>
+ 
+<view class='top-box'> 
+  <i-tabs current="{{ current }}" color="" bindchange="handleChange">
+    <i-tab key="0" title="有谁在卖"></i-tab>
+    <i-tab key="1" title="有谁想买"></i-tab>
+  </i-tabs>
+</view>
+
+<view style='margin-bottom:130rpx;'>
+  <!-- 有谁在卖 -->
+  <view class='post-box' wx:if="{{current=='0'}}">
+    <!-- wx:for 渲染 -->
+    <view class='post-item-hf' wx:for="{{postData}}" wx:key="" wx:if="{{!item.isHidden}}" bindtap="gotoDetail" data-url="{{item.post_id}}">
+      <view class="cu-card case">
+        <view class="cu-item" style='margin:0;'>
+          <!-- 所在分类 -->
+          <view class="cu-tag bg-blue" style='position:absolute;right:2%;top:2%;border-radius: 5px;z-index:9998'>{{goods_type_text[item.goods_type]}}</view>
+          <!-- 商品图 -->
+          <view class="image" style='height:150px;overflow:hidden;'>
+            <image wx:if="{{item.image.length}}" src="cloud://envir-i8vdp.656e-envir-i8vdp/image/{{item.image[0]}}.jpg" mode="widthFix"  lazy-load='true'></image>
+          </view>
+
+          <!-- 商品名称 -->
+          <view class='title-box' style='border-bottom:1px rgb(243,243,243) solid;display:flex;flex-direction:column;align-items:flex-start;'>
+            <text>{{item.headline}}</text>
+            <text class="text-price text-red">{{item.money}}</text>
+          </view>  
+ 
+          <!-- 卖家信息 -->
+          <view class="cu-list menu-avatar">
+            <view class='info-box'>
+              <!-- 头像 -->
+              <image class="cu-avatar round" src='cloud://envir-i8vdp.656e-envir-i8vdp/avatar/{{item.open_id}}.jpg'></image>
+              <!-- 用户名 -->
+              <view class="content flex-sub" style='margin-left:5px;'>
+                <view class="text-black" style='font-weight:bold;font-size:10px;'>{{nickname[item.open_id]}}</view>
+              </view>
+            </view>
+          </view>
+
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 有谁想买 -->
+  <view class='post-box' wx:if="{{current=='1'}}">
+    <!-- wx:for 渲染 -->
+    <view class='post-item' wx:for="{{postData}}" wx:key=""  wx:if="{{!item.isHidden}}" bindtap="gotoDetail" data-url="{{item.post_id}}">
+      <view class="cu-card case">
+        <view class="cu-item" style='margin:0;'>
+          <!-- 所在分类 -->
+          <view class="cu-tag bg-blue" style='position:absolute;right:1%;top:2%;border-radius: 5px;z-index:9998;'>{{goods_type_text[item.goods_type]}}</view>
+          <!-- 商品图 -->
+          <!-- wx:if 判断有没有图片 -->
+          <view class="image" style='height:200px;overflow:hidden;' wx:if="{{item.image.length}}">
+            <image src="cloud://envir-i8vdp.656e-envir-i8vdp/image/{{item.image[0]}}.jpg" mode="widthFix"  lazy-load='true'></image>
+          </view>
+
+          <!-- 商品名称 -->
+          <view class='title-box' style='border-bottom:1px rgb(243,243,243) solid;align-items:flex-start;'>
+            <text>{{item.headline}}</text>
+            <text class="text-price text-red" style='position:absolute; left:80%;'>{{item.money}}</text>
+          </view>  
+
+          <!-- 卖家信息 -->
+          <view class="cu-list menu-avatar">
+            <view class='info-box'>
+              <!-- 头像 -->
+              <image class="cu-avatar round" src='cloud://envir-i8vdp.656e-envir-i8vdp/avatar/{{item.open_id}}.jpg'></image>
+              <!-- 用户名 -->
+              <view class="content flex-sub" style='margin-left:5px;'>
+                <view class="text-black" style='font-weight:bold;font-size:10px;'>{{nickname[item.open_id]}}</view>
+              </view>
+            </view> 
+          </view>
+ 
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <i-load-more tip="暂无数据" loading="{{ false }}" />
+</view>
+
+<!-- 底部导航栏 -->
+<view class="cu-bar tabbar bg-white foot" style='z-index:9999'>
+  <view class="action text-gray add-action">
+    <button class="cu-btn icon-add bg-gray" bindtap='gotoPublish'></button>
+    发布
+  </view>
+</view>

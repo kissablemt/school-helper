@@ -1,0 +1,68 @@
+
+
+<!--帖子分类-->
+<view class='invitation' style='border-bottom:1px rgb(243,243,243) solid;'>
+  <view class='info-items showborderTop' bindtap='getInfo'>
+    <text>帖子类型 ：</text>
+    <view class='infotext'>{{post_type_text[post_type]}}</view>
+  </view>
+  <view class='info-items' wx:if="{{post.post_type<=1}}" open-type="contact">
+    <text>分类 ：</text>
+    <view class='infotext'>{{post_type>1?"无":goods_type_text[goods_type]}}</view>
+  </view>
+</view>
+
+<!--帖子分类选择-->
+<view class='wrap' hidden='{{hiddenmodalput}}'>
+  <view class='shadow'>
+    <view class='popUp'>
+      <view class='title'>帖子分类选择</view>
+      <form bindsubmit='confirmM'>
+        <view class='content'>
+          <picker-view indicator-style="height: 50px;" style="width: 100%; height: 340rpx;" value="{{value}}" bindchange="bindChange">
+            <picker-view-column>
+              <view wx:for="{{post_type_text}}" wx:key style="line-height: 50px">{{item}}</view>
+            </picker-view-column>
+            <picker-view-column>
+              <view wx:if="{{post_type<=1}}" wx:for="{{goods_type_text}}" wx:key style="line-height: 50px">{{item}}</view>
+            </picker-view-column>
+          </picker-view>
+          <view class='foot'>
+            <button class='cancel-btn' bindtap='cancelM'>取消</button>
+            <button class='confirm-btn' bindtap='comfirmP'>确定</button>
+          </view>
+        </view>
+      </form>
+    </view>
+  </view>
+</view>
+
+<!--文本输入与图片显示-->
+<view class='items'>
+  <view class='area' style='padding:5%;'>
+    <textarea class='textArea' placeholder='具体内容..' bindinput='input_content' value='{{post.content}}'></textarea>
+    <!--添加图片并显示图片-->
+  </view>
+
+  <!--各类选项-->
+  <view class='invitation ' style='border-top:1px rgb(243,243,243) solid;padding:2% 4%;;'>
+    <view class='info-items showborderTop'>
+      <text class='inTitle'>标题</text>
+      
+      <input class='inContent' type='text' placeholder='帖子标题' bindinput='input_headline' value='{{post.headline}}'></input>
+    </view>
+    <view class='info-items' wx:if="{{post.post_type<=1}}"> 
+      <text class='inTitle'>价钱</text>
+      <input class='inContent' type='digit' placeholder='商品价钱' bindinput='input_price' value='{{post.money}}'></input>
+    </view>
+    <view class='info-items'>
+      <text class='inTitle'>联系方式</text>
+      <input class='inContent' type='text' placeholder='联系方式' bindinput='input_contact' value='{{post.contact_way}}'></input>
+    </view>
+  </view>
+
+
+  <view class='btn'>
+    <button class='btnPublish' bindtap='modify_complete'>修改</button>
+  </view>
+</view>

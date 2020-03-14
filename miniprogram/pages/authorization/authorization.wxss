@@ -1,0 +1,36 @@
+/* miniprogram/pages/authorization/authorization.wxss */
+page {
+  height: 100%;
+  background-color: rgb(253, 254, 255);
+}
+
+.header {
+  margin-top: 20%;
+  text-align: center;
+  width: 50%;
+  height: 300rpx;
+  line-height: 450rpx;
+}
+
+.header image {
+  width: 350rpx;
+  height: 350rpx;
+}
+
+.content {
+  font-weight: bold;
+  margin-bottom: 90rpx;
+}
+
+.content text {
+  display: block;
+  color: #a31a7a;
+  margin-top: 40rpx;
+}
+
+.bottom {
+  width: 30%;
+  border-radius: 80rpx;
+  margin: 150rpx 0;
+  font-size: 35rpx;
+}

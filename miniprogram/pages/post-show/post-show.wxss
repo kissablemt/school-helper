@@ -1,0 +1,52 @@
+/* miniprogram/pages/activity/activity-detail/activity-detail.wxss */
+.container {
+  padding: 3%;
+  min-height: 100%;
+  margin-bottom: 30rpx;
+}
+
+.more-block {
+  padding: 2%;
+  display: flex;
+  flex-direction: column;
+}
+
+.more-block text {
+  font-size: 14px;
+  font-weight: bolder;    
+  word-break: keep-all;
+  word-wrap: break-word;
+}
+
+.bgColor {
+  margin: 2%;
+  padding: 3%;
+  background-color: rgb(255, 255, 255);
+}
+
+.row {
+  display: flex;
+  width: 100%;
+}
+
+.showContent {
+  margin-left: 13%;
+}
+
+.showFont{
+  word-break:break-all;
+  
+  line-height: 20px;  /*此处与js代码有关，切莫随意更改*/
+  max-height: 100%;
+  overflow: hidden;
+}
+.showFont-hidePart{
+  line-height: 20px;  /*此处与js代码有关，切莫随意更改*/
+  max-height: 40px;
+  overflow: hidden;
+}   
+.toggleMore-button{
+  width: 100%;
+  text-align: right;
+  font-size: 30rpx;
+}
