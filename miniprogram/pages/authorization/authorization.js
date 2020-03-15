@@ -44,6 +44,7 @@ Page({
 
   // 登录成功=>跳转到index
   login: function(e) {
+    var that = this
     return new Promise(function(resolve, reject) {
       if (e.detail.signature) {
         // console.log('[success] 授权成功')
