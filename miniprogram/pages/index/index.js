@@ -1,4 +1,3 @@
-
 const app = getApp()
 const gPostType = 0
 
@@ -7,19 +6,19 @@ Page({
     post_type_text: ["二手商品", "二手商品求购", "失物招领", "义捐活动"],
     goods_type_text: ["二手书", "二手车", "数码", "家电", "其他"],
     iconList: [{
-      iconPath:"/images/index_icon/digital.png",
+      iconPath: "/images/index_icon/digital.png",
       goods_type: 2,
       name: '数码'
     }, {
       iconPath: "/images/index_icon/book.png",
       goods_type: 0,
       name: '二手书'
-    }, { 
-        iconPath: "/images/index_icon/bicycle.png",
+    }, {
+      iconPath: "/images/index_icon/bicycle.png",
       goods_type: 1,
       name: '二手车'
     }, {
-        iconPath: "/images/index_icon/appliances.png",
+      iconPath: "/images/index_icon/appliances.png",
       goods_type: 3,
       name: '家电'
     }, {
@@ -41,29 +40,29 @@ Page({
     isHide: true,
     isWaiting: true,
 
-    tabbar:{},
+    tabbar: {},
   },
 
   onLoad: function(options) { //初始化数据
-  //跟改我们自定义导航栏样式，并真正的隐藏导航栏
-    app.editTabbar() 
+    //跟改我们自定义导航栏样式，并真正的隐藏导航栏
+    app.editTabbar()
     this.hidetabbar()
-    
-    var that = this  
+
+    var that = this
     setTimeout(function() {
       that.setData({
         isWaiting: false
       })
     }, 1500)
     this.pageInit()
-    
-  }, 
-  hidetabbar() {//隐藏底部导航栏
+
+  },
+  hidetabbar() { //隐藏底部导航栏
     wx.hideTabBar({
-      fail: function (res) {
-        setTimeout(function () { // 做了个延时重试一次，作为保底。
+      fail: function(res) {
+        setTimeout(function() { // 做了个延时重试一次，作为保底。
           wx.hideTabBar()
-        }, 500)
+        }, 50)
       }
     });
   },
@@ -79,14 +78,14 @@ Page({
     const db = wx.cloud.database()
     db.collection('Post').where({
         post_type: 0
-      }).orderBy('post_id', 'desc').limit(that.data.showDataCount) 
+      }).orderBy('post_id', 'desc').limit(that.data.showDataCount)
       .get()
-      .then(res => { 
+      .then(res => {
         // console.log("res", res) 
         that.setData({
-          postData: res.data, 
+          postData: res.data,
           page: 1,
-          hasMoreData: true 
+          hasMoreData: true
         })
         that.showPageData()
       })
@@ -215,7 +214,7 @@ Page({
       })
     })
   },
-   judgeNewInfo: function () {//判断是否有新消息
+  judgeNewInfo: function() { //判断是否有新消息
     var that = this
     const db = wx.cloud.database()
     db.collection('Message').where({
@@ -223,7 +222,7 @@ Page({
     }).get().then(res => {
       // console.log("res",res)
       let infos = res.data[0].my_mess
-      for (let data of infos) { 
+      for (let data of infos) {
         if (data[1] == 0) { //有新的info
           that.setData({
             hasNewInfo: true,
@@ -245,6 +244,6 @@ Page({
       url: '../mylogs/home/home',
     })
   },
-  
+
 
 })
