@@ -12,14 +12,6 @@ Page({
     // console.log(app.globalData)
   },
 
-  // 方便测试，可以不用每次都授权，直接getStorageSync拿就好
-  // 有：userInfo, open_id, school_id, accessToken, last_login_time 
-  debug: function() {
-    wx.setStorageSync('userInfo', app.globalData.userInfo)
-    wx.setStorageSync('schoo_id', app.globalData.school_id)
-    wx.setStorageSync('open_id', app.globalData.open_id)
-  },
-
   async auth() {
     var that = this;
     var onGetSetting = await that.onGetSetting();
@@ -30,7 +22,6 @@ Page({
     if (app.globalData.accessToken) { // 已登录
       console.log('已登录')
       var getUserInfo = await that.getUserInfo()
-      that.debug()
       wx.switchTab({
         url: '../index/index',
       })
@@ -69,12 +60,12 @@ Page({
                     wx.setStorageSync('accessToken', res.data.data);
                     wx.setStorageSync('lastLoginTime', new Date());
                     console.log("[success] Login => AccessToken:", app.globalData.accessToken)
-
-                    that.debug()
-                    wx.switchTab({
-                      url: '../index/index',
+                    that.getUserInfo().then(res => {
+                      wx.switchTab({
+                        url: '../index/index',
+                      })
+                      resolve(true)
                     })
-                    resolve(true)
                   } else {
                     reject(1)
                   }
@@ -161,7 +152,7 @@ Page({
           'Authorization': 'Bearer ' + app.globalData.accessToken
         },
         success(res) {
-          if (res.data.status) {
+          if (res.data.ok) {
             console.log("[success] getUserInfo")
             app.globalData.userInfo = res.data.data
             // app.globalData.schoolId = res.data.data.schoolId
