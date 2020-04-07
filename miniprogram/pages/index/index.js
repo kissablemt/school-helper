@@ -3,6 +3,7 @@ const gPostType = 0
 
 Page({
   data: {
+    
     post_type_text: ["二手商品", "二手商品求购", "失物招领", "义捐活动"],
     goods_type_text: ["二手书", "二手车", "数码", "家电", "其他"],
     iconList: [{
@@ -26,36 +27,41 @@ Page({
       goods_type: 4,
       name: '其他'
     }, ],
-
-    page: 1,
-    pageSize: 6,
-    showDataCount: 20, //首页最多show 10 条
-    hasMoreData: true,
-
-    postData: [],
-    nowShowData: [],
-    nickname: {},
-
-    canIUse: wx.canIUse('button.open-type.getUserInfo'),
+    open_id: "",
     isHide: true,
     isWaiting: true,
-
+    hasNewInfo: false,
     tabbar: {},
+
+    keyWord: "",
+    inputKeyWord: "",
+    pageSize: 4,
+    pageNum: 1,
+    imageUrl: "",
+    nowShowData: [],
+    allData: [],
+    //searchData: [],
+    nickname: "",
+    headPortraitUrl: "",
   },
 
   onLoad: function(options) { //初始化数据
+    // console.log("index onLoad!")
     //跟改我们自定义导航栏样式，并真正的隐藏导航栏
     app.editTabbar()
     this.hidetabbar()
-
     var that = this
-    setTimeout(function() {
+    this.setData({
+      imageUrl: app.globalData.file_url,
+    })
+
+    setTimeout(function () {
       that.setData({
         isWaiting: false
       })
     }, 1500)
     this.pageInit()
-
+    
   },
   hidetabbar() { //隐藏底部导航栏
     wx.hideTabBar({
@@ -69,83 +75,81 @@ Page({
   onShow: function() {
     this.judgeNewInfo() //show时判断是否有info
     this.setData({
-      school_id: app.globalData.school_id
+      school_id: app.globalData.userInfo.schoolId
+
     })
   },
   onPullDownRefresh: function() { //---下拉刷新帖子，这只是刷新首页，即最新帖子，没有更新到app.globalData
     var that = this
 
-    const db = wx.cloud.database()
-    db.collection('Post').where({
-        post_type: 0
-      }).orderBy('post_id', 'desc').limit(that.data.showDataCount)
-      .get()
-      .then(res => {
-        // console.log("res", res) 
-        that.setData({
-          postData: res.data,
-          page: 1,
-          hasMoreData: true
-        })
-        that.showPageData()
+    if (!that.data.keyWord.length) {
+      that.setData({
+        pageNum: 1,
+        allData: []
       })
-      .catch(console.error)
+      that.getData()
+    }
 
-    setTimeout(function() {
+    setTimeout(function () {
       wx.stopPullDownRefresh()
     }, 500)
   },
   onReachBottom: function() {
     var that = this
-    if (that.data.hasMoreData == true) {
-      that.showPageData()
-    } else {
-      console.log("没有更多数据")
-    }
+
+    that.getData()    
   },
   /** pageInit */
   pageInit: function() {
     var that = this
-    if (app.globalData.initDone) {
-      that.setData({
-        nickname: app.globalData.nickname,
-        postData: app.globalData.post[gPostType],
-        school_id: app.globalData.school_id,
-        open_id: app.globalData.userInfo.open_id,
-      })
-      that.showPageData()
-    } else {
-      app.initCallback = res => {
-        if (res) {
-          that.setData({
-            nickname: app.globalData.nickname,
-            postData: app.globalData.post[gPostType],
-            school_id: app.globalData.school_id,
-            open_id: app.globalData.userInfo.open_id,
-          })
-          that.showPageData()
-        }
-      }
-    }
+
+    // console.log('pageInit')
+    that.setData({
+      imageUrl: app.globalData.file_url,
+      nickname: app.globalData.userInfo.nickname,
+      schoolId: app.globalData.userInfo.schoolId,
+      open_id: app.globalData.userInfo.openId,
+      headPortraitUrl: app.globalData.userInfo.headPortraitUrl
+    })
+    that.getData()
   },
 
-  // 展示新页面
-  showPageData: function() {
+  // 获取数据
+  getData: async function() {
     var that = this
-    let page = that.data.page - 1
     let pageSize = that.data.pageSize
-    let dataCount = that.data.showDataCount
 
-    that.setData({
-      nickname: that.data.nickname,
-      nowShowData: that.data.postData.slice(0, (page + 1) * pageSize)
+    await wx.request({
+      url: app.globalData.api_url +'post/selectSecondHandList',
+      method: 'GET',
+      header: {
+        'Authorization': 'Bearer ' + app.globalData.accessToken
+      },
+      data: {
+        pageNum: that.data.pageNum,
+        pageSize: that.data.pageSize,
+        keyword: that.data.keyWord
+      },
+      success(res) {
+        // console.log('getpostdata success!')
+        // console.log(res.data)
+        if (res.data.code == 200) { 
+          if (res.data.data && res.data.data.length) {
+            that.setData({
+              allData: that.data.allData.concat(res.data.data),
+              pageNum: that.data.pageNum + 1,
+              nowShowData: that.data.allData.concat(res.data.data)
+            })
+          } else {
+            wx.showToast({
+              title: '找不到相关产品'
+            })
+          }
+        }
+      }, fail(msg) {
+        // console.log(msg)
+      }
     })
-    if (dataCount / pageSize - 1 > page) { /*总页数小于当前页*/
-      that.data.hasMoreData = true
-    } else {
-      that.data.hasMoreData = false
-    }
-    that.data.page += 1
   },
 
   /** 页面跳转 */
@@ -179,56 +183,57 @@ Page({
       url: '/pages/more/more',
     })
   },
-
+  /* 获取搜索框输入 */
+  searchInput: function(e) {
+    // console.log(e.detail.value)
+    if (e.detail.value) {
+      this.setData({
+        inputKeyWord: e.detail.value
+      })
+    } else {
+      this.setData({
+        keyWord: "",
+        inputKeyWord: e.detail.value
+      })
+    }
+    
+  },
   /** 搜索 */
-  search: function(e) {
+  search: function() {
     var that = this
-    new Promise(function(resolve, reject) {
-      var post = that.data.postData //当前展示的数组
-      var s = e.detail.value.split(' ')
-      if (s.length) { //有关键字
-        for (let i = 0; i < post.length; ++i) {
-          if (post[i].raw == null) {
-            post[i].raw = post[i].isHidden
-          }
-          var isHidden = false
-          for (let j = 0; j < s.length; ++j) {
-            if (post[i].headline.indexOf(s[j]) == -1) {
-              isHidden = true
-              break
+    // console.log("search: ", that.data.inputKeyWord)
+
+    that.setData({
+      keyWord: that.data.inputKeyWord,
+      allData: [],
+      pageNum: 1
+    })
+    that.getData()
+  },
+  judgeNewInfo: async function() { //判断是否有新消息
+    var that = this
+
+    await wx.request({
+      url: app.globalData.api_url + 'message/selectAll',
+      method: 'GET',
+      header: {
+        'Authorization': 'Bearer ' + app.globalData.accessToken
+      },
+      success(res) {
+        // console.log('getMessage success!')
+        // console.log(res.data)
+        if (res.data.code == 200) {
+          for (let i = 0; i < res.data.data.length; ++i) {
+            if (res.data.data[i].status == 1) {
+              that.setData({
+                hasNewInfo: true,
+              })
+              break;
             }
           }
-          post[i].isHidden = isHidden
         }
-      } else {
-        for (let i = 0; i < post.length; ++i) {
-          if (post[i].raw != null) {
-            post[i].isHidden = post[i].raw
-          }
-        }
-      }
-      resolve(post)
-    }).then(res => {
-      that.setData({
-        nowShowData: res //当前展示的数组
-      })
-    })
-  },
-  judgeNewInfo: function() { //判断是否有新消息
-    var that = this
-    const db = wx.cloud.database()
-    db.collection('Message').where({
-      open_id: app.globalData.userInfo.open_id
-    }).get().then(res => {
-      // console.log("res",res)
-      let infos = res.data[0].my_mess
-      for (let data of infos) {
-        if (data[1] == 0) { //有新的info
-          that.setData({
-            hasNewInfo: true,
-          })
-          break
-        }
+      }, fail(msg) {
+        console.log(msg)
       }
     })
   },
@@ -238,12 +243,5 @@ Page({
       url: '../school/school',
     })
   },
-
-  getMylogs: function() {
-    wx.navigateTo({
-      url: '../mylogs/home/home',
-    })
-  },
-
 
 })

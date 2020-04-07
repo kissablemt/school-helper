@@ -1,1 +1,11 @@
 /* miniprogram/pages/lost-found/home/home.wxss */
+
+page {
+  height: 100%;
+}
+
+.relative {
+  position: relative;
+  top: -21rpx;
+  left:-18rpx;
+}

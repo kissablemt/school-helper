@@ -4,132 +4,126 @@ const gPostType = 2
 import regeneratorRuntime from '../../../utils/regenerator-runtime/runtime.js';
 Page({
   data: {
-    page: 1,
-    pageSize: 2,
-    dataCount: 0,
-    hasMoreData: true,
-    postData: [],
-    nowShowData: [],
-    nickname: {},
+    nickname: "",
     post_type: 2,
+    goods_type: 0,
+    isWaiting: true,
+    open_id: "",
+    keyWord: "",
+    inputKeyWord: "",
+    pageSize: 3,
+    pageNum: 1,
+    imageUrl: "",
+    nowShowData: [],
+    allData: [],
+    hasNewInfo: false,
+    nickname: "",
+    headPortraitUrl: ""
   },
 
   onLoad: function(options) { //初始化数据
     var that = this
+
+    this.setData({
+      imageUrl: app.globalData.file_url
+    })
+
+    setTimeout(function () {
+      that.setData({
+        isWaiting: false
+      })
+    }, 1500)
     this.pageInit()
   },
 
   onShow: function() {
-    if (app.globalData.school_id && app.globalData.school_name) {
+    this.judgeNewInfo() //show时判断是否有info
+    if (app.globalData.userInfo.schoolId) {
       this.setData({
-        school_id: app.globalData.school_id,
-        school_name: app.globalData.school_name,
+        school_id: app.globalData.userInfo.schoolId
       })
-      this.schoolShowOnly()
     }
   },
 
   onReachBottom: function() {
     var that = this
-    if (that.data.hasMoreData == true) {
-      that.showPageData()
-    } else {
-      console.log("没有更多数据")
-    }
+    that.getData()  
   },
   onPullDownRefresh: function () {
     var that = this
-    this.flushPost().then(res => {
-      wx.stopPullDownRefresh()
+    if (!that.data.keyWord.length) {
       that.setData({
-        postData: that.data.postData,
-        page: 1,
-        hasMoreData: true
+        pageNum: 1,
+        allData: []
       })
-      that.showPageData()
-    })
+      that.getData()
+    }
+
+    setTimeout(function () {
+      wx.stopPullDownRefresh()
+    }, 500)
   },
   pageInit: function() {
     var that = this
-    if (app.globalData.initDone) {
-      that.setData({
-        nickname: app.globalData.nickname,
-        postData: app.globalData.post[gPostType],
-        school_id: app.globalData.school_id,
-        open_id: app.globalData.userInfo.open_id,
-      })
-      that.showPageData()
-    } else {
-      app.initCallback = res => {
-        if (res) {
-          that.setData({
-            nickname: app.globalData.nickname,
-            postData: app.globalData.post[gPostType],
-            school_id: app.globalData.school_id,
-            open_id: app.globalData.userInfo.open_id,
-          })
-          that.showPageData()
-        }
-      }
-    }
-  },
-
-  // 展示新页面
-  showPageData: function() {
-
-    var that = this
-    let page = that.data.page - 1
-    let pageSize = that.data.pageSize
-    let dataCount = that.data.postData.length
-
+    
+    // console.log('pageInit')
     that.setData({
-      nickname: that.data.nickname,
-      nowShowData: that.data.postData.slice(0, (page + 1) * pageSize)
+      imageUrl: app.globalData.file_url,
+      nickname: app.globalData.userInfo.nickname,
+      schoolId: app.globalData.userInfo.schoolId,
+      open_id: app.globalData.userInfo.openId,
+      headPortraitUrl: app.globalData.userInfo.headPortraitUrl
     })
-    if (dataCount / pageSize - 1 > page) { /*总页数小于当前页*/
-      that.data.hasMoreData = true
-    } else {
-      that.data.hasMoreData = false
-    }
-    that.data.page += 1
+    that.getData()
+
   },
+  // 获取数据
+  getData: async function () {
+    var that = this
+    let pageSize = that.data.pageSize
+
+    await wx.request({
+      url: app.globalData.api_url + 'post/selectList',
+      method: 'GET',
+      header: {
+        'Authorization': 'Bearer ' + app.globalData.accessToken
+      },
+      data: {
+        pageNum: that.data.pageNum,
+        pageSize: that.data.pageSize,
+        keyword: that.data.keyWord,
+        postType: parseInt(that.data.post_type + 1)
+      },
+      success(res) {
+        // console.log('getpostdata success!')
+        // console.log(res.data)
+        if (res.data.code == 200) {
+          if (res.data.data && res.data.data.length) {
+            that.setData({
+              allData: that.data.allData.concat(res.data.data),
+              pageNum: that.data.pageNum + 1,
+              nowShowData: that.data.allData.concat(res.data.data)
+            })
+          } else {
+            wx.showToast({
+              title: '找不到相关产品'
+            })
+          }
+        }
+      }, fail(msg) {
+        // console.log(msg)
+      }
+    })
+  },
+  
   gotoDetail: function(event) {
     var post_id = event.currentTarget.dataset.url
-    console.log(post_id)
+    // console.log(post_id)
     wx.navigateTo({
       url: '/pages/post-show/post-show?post_id=' + post_id,
     })
   },
-  flushPost: async function() { //帖子刷新
-    var that = this
-    const db = wx.cloud.database()
-    var newPostData = []
-    let sum, cnt = that.data.postData.length //一开始，跳过已经获取的数据
-
-    await db.collection('Post').where({ //获取当前post_type的帖子总数
-      post_type: that.data.post_type,
-    }).count().then(res => {
-      sum = res.total
-    })
-
-    while (cnt < sum) {
-      await db.collection('Post').where({ //循环获取所有新的数据
-          post_type: that.data.post_type,
-        }).orderBy('post_id', 'asc').skip(cnt).get()
-        .then(res => {
-          newPostData = newPostData.concat(res.data)
-        })
-      cnt += 20 //当跳出循环后，比起真正的数据多出20
-    }
-    that.data.postData = newPostData.concat(that.data.postData) //最新的数据放到开始,这里不需要刷新页面，就不setData
-    app.globalData.post[that.data.post_type] = app.globalData.post[that.data.post_type].concat(newPostData) 
-    console.log("flushOK")
-    return new Promise(function(resolve, reject) {
-      resolve('ok')
-    })
-
-
-  },
+  
   // 更换学校
   selectSchool: function() {
     wx.navigateTo({
@@ -137,55 +131,34 @@ Page({
     })
   },
 
-  schoolShowOnly: function() {
-    var nowShowData = this.data.nowShowData
-    var school_id = this.data.school_id
-    for (let i = 0; i < nowShowData.length; ++i) {
-      if (school_id != 0 && nowShowData[i].school_id != school_id) {
-        nowShowData[i].isHidden = true
-      } else {
-        nowShowData[i].isHidden = false
-      }
-    }
-    this.setData({
-      nowShowData: nowShowData
-    })
-  },
-
-  search: function(e) {
-    var that = this
-    new Promise(function(resolve, reject) {
-      var post = app.globalData.post[gPostType]
-      var s = e.detail.value.split(' ')
-      if (s.length) { //有关键字
-        for (let i = 0; i < post.length; ++i) {
-          if (post[i].raw == null) {
-            post[i].raw = post[i].isHidden
-          }
-          var isHidden = false
-          for (let j = 0; j < s.length; ++j) {
-            if (post[i].headline.indexOf(s[j]) == -1) {
-              isHidden = true
-              break
-            }
-          }
-          post[i].isHidden = isHidden
-        }
-      } else {
-        for (let i = 0; i < post.length; ++i) {
-          if (post[i].raw != null) {
-            post[i].isHidden = post[i].raw
-          }
-        }
-      }
-      resolve(post)
-    }).then(res => {
-      console.log(res)
-      that.setData({
-        nowShowData: res //当前展示的数组
+  /* 获取搜索框输入 */
+  searchInput: function (e) {
+    // console.log(e.detail.value)
+    if (e.detail.value) {
+      this.setData({
+        inputKeyWord: e.detail.value
       })
-    })
+    } else {
+      this.setData({
+        keyWord: "",
+        inputKeyWord: e.detail.value
+      })
+    }
+
   },
+  /** 搜索 */
+  search: function () {
+    var that = this
+    // console.log("search: ", that.data.inputKeyWord)
+
+    that.setData({
+      keyWord: that.data.inputKeyWord,
+      allData: [],
+      pageNum: 1
+    })
+    that.getData()
+  },
+  
   gotoPublish: function() {
     var that = this
     wx.navigateTo({
@@ -197,4 +170,31 @@ Page({
       url: '/pages/mylogs/home/home',
     })
   },
+  judgeNewInfo: async function () { //判断是否有新消息
+    var that = this
+
+    await wx.request({
+      url: app.globalData.api_url + 'message/selectAll',
+      method: 'GET',
+      header: {
+        'Authorization': 'Bearer ' + app.globalData.accessToken
+      },
+      success(res) {
+        // console.log('getMessage success!')
+        // console.log(res.data)
+        if (res.data.code == 200) {
+          for (let i = 0; i < res.data.data.length; ++i) {
+            if (res.data.data[i].status == 1) {
+              that.setData({
+                hasNewInfo: true,
+              })
+              break;
+            }
+          }
+        }
+      }, fail(msg) {
+        console.log(msg)
+      }
+    })
+  }
 })

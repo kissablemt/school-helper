@@ -5,67 +5,76 @@ Page({
   data: { 
     sortBy: '正序',
     sortByText: ['正序', '倒序'],
-    cardCur: 0,
-    // 以下为需要
-    pageSize: 20, // 一次刷新的评论个数
-    count: 0, // 显示的评论次数 
-    total: 0, // 总评论次数
+
+    pageSize: 3, // 一次刷新的评论个数
+    pageNum: 1,
+    post: {},
+    imageUrl: "",
+    collectionData: {},
     isFavourite: false, // 收藏颜色
     isFavouriteOri: false, 
-    isReplyComment: false,
-    showAll: [],
-
-    lastTimeSendMess: 1,
-    inputContent:'', 
     to_open_id: '',  //一开始需要置 发帖人信息，否者直接发信息 会没有to_open_id,现在添加到getPost函数中
-    isDeleted:false, //帖子是否已被删除 
-    
+    parent_id: '',
+    comment_data: [],
+    openId: '',
+    lastTimeSendMess: 1,
+    inputContent: '', 
+    isReplyComment: false,
+    hiddenReport: true,
   },
  
-  onLoad: function(options) {
+  onLoad: async function(options) {
     var that = this
     that.setData({
-      post_id: options.post_id,
-      nickname: app.globalData.nickname
+      post_id: parseInt(options.post_id),
+      openId: app.globalData.userInfo.openId,
+      imageUrl: app.globalData.file_url
     })
+    await this.getPost()
+    
+    console.log("onload")
+    if (JSON.stringify(that.data.post) == '{}' || that.data.post.status != 1) {
+      setTimeout(function () {
+        wx.navigateBack()  
+      }, 1000) //延迟时间 这里是1秒 
+      
+    }
   },
 
   onShow: function() {
-    this.getPost()
+    
   },
 
-  onUnload: function() {
+  onUnload: async function() {
     if (this.data.isFavourite != this.data.isFavouriteOri) {
       // console.log("change")
-      this.changeCollection()
+      await this.changeCollection()
     }
+    console.log("onUnload")
   },
-
-  onReachBottom: function() {
+  onPullDownRefresh: async function () { //---下拉刷新帖子
     var that = this
-    var count = parseInt(that.data.count + that.data.pageSize)
-    if (count <= that.data.total) {
-      that.setData({
-        count: count
-      })
-    } else if (that.data.hasMore) {
-      that.setData({
-        count: that.data.total
-      })
-      that.data.hasMore = false
-      console.log("没有更多数据")
-    }
-  },
 
-  levelShowMore: function(e) {
-    var index = e.currentTarget.dataset.index
-    this.data.showAll[index] = !this.data.showAll[index]
-    this.setData({
-      showAll: this.data.showAll
+    that.setData({
+      pageNum: 1,
+      comment_data: []
     })
+    await that.getComment()
+    
+    setTimeout(function () {
+      wx.stopPullDownRefresh()
+    }, 500)
+  },
+  onReachBottom: async function() {
+    var that = this
+
+    await that.getComment()
   },
 
+  // 回复评论
   replyComment: function(e) {
+    console.log("replyComment")
+
     if (this.data.post == undefined) { //没有该帖子
       return;
     }
@@ -77,23 +86,73 @@ Page({
       parent_id: e.currentTarget.dataset.parent_id,
     }) 
   },
-
+  // 评论
   replyPost: function(e) {
+    console.log("replyPost")
     if (this.data.post == undefined) { //没有该帖子
       return;
     }
     this.setData({
       isReplyComment: false,
-      to_open_id: this.data.post.open_id,
+      to_open_id: this.data.post.openId,
       parent_id: null
     })
   },
-
+  // 获取输入
   doInput: function(event) {
     this.setData({
       inputContent: event.detail.value
     }) 
     // console.log(this.data.inputContent)
+  },
+  // 删除自己的评论
+  deleteReply: async function (e) {
+    var replyId = e.currentTarget.dataset.reply_id
+    console.log("deleteReply(): ", replyId)
+
+    let deleteReplyPromise = new Promise((resolve, reject) => {
+      wx.request({
+        url: app.globalData.api_url + 'reply/' + replyId.toString(),
+        method: 'DELETE',
+        header: {
+          'Authorization': 'Bearer ' + app.globalData.accessToken
+        },
+        data: {
+        },
+        success(res) {
+          if (res.data.code == 200) {
+            console.log("success:", res)
+            resolve(res)
+            //发送成功提示
+            wx.showToast({
+              title: '删除成功',
+              icon: 'success',
+              duration: 1000,
+            })
+          } else {
+            resolve(res)
+            console.log("request success, but response fail: ", res)
+            wx.showToast({
+              title: '删除失败'
+            })
+          }
+        }, fail(msg) {
+          reject(msg)
+          wx.showToast({
+            title: '系统异常'
+          })
+          // console.log(msg)
+        }
+      })
+    })
+    await deleteReplyPromise
+    this.setData({
+      pageNum: 1,
+      comment_data: [],
+      parentId: null,
+      isReplyComment: false
+    })
+    await this.getComment()
   },
   /**
    * @author 星星星
@@ -101,7 +160,7 @@ Page({
    * @description 完成：限制空字符提交，短时间内多次提交。
    *              未完成：提示图标太丑，需要更改
    */
-  submit: function() {
+  submit: async function() {
     var that = this
     var lastTimeSendMess = that.data.lastTimeSendMess
     var nowTime = Date.parse(new Date()) //获取时间戳
@@ -113,7 +172,7 @@ Page({
     if (intervalTime < 5) { //发信息间隔小于5秒
       wx.showToast({
         title: '太频繁啦',
-        icon: 'success',
+        icon: 'fail',
         duration: 1000,
       })
       return;
@@ -121,146 +180,272 @@ Page({
 
     if ( that.data.inputContent == undefined || (/^\s{0,}$/).test(that.data.inputContent)) { //匹配空，或空格
       wx.showToast({
-        title: '不能发空信息哦',
-        icon: 'success',
+        title: '发送内容不能为空',
+        icon: 'fail',
         duration: 1000,
       })
       return;
     }
-    //发送成功提示
-    wx.showToast({
-      title: '成功啦',
-      icon: 'success',
-      duration: 1000,
-    })
-    that.setData({
-      lastTimeSendMess: nowTime //重置上次发评论的时间戳
-    })
-   
-    wx.cloud.callFunction({
-      name: 'add_record',
-      data: {
-        table: 'Comment',
-        name_id: 'reply_id',
-        mydata: { 
-          post_id: post.post_id,
-          headline: post.headline,
-          content: that.data.inputContent,
-          from_open_id: app.globalData.userInfo.open_id,
-          to_open_id: that.data.to_open_id,
-          parent_id: parent_id,
-          date: time
-        }
-      }
-    }).then(res => {
-      that.setData({
-        inputContent: '',
-        isReplyComment: false,
+    if (that.data.parent_id == null) {
+      let submitReplyPromise = new Promise((resolve, reject) => {
+        wx.request({
+          url: app.globalData.api_url + 'reply',
+          method: 'POST',
+          header: {
+            'Authorization': 'Bearer ' + app.globalData.accessToken
+          },
+          data: {
+            postId: that.data.post_id,
+            content: that.data.inputContent,
+            toOpenId: that.data.to_open_id
+          },
+          success(res) {
+            if (res.data.code == 200) {
+              console.log("success:", res)
+              resolve(res)
+              //发送成功提示
+              wx.showToast({
+                title: '发送成功',
+                icon: 'success',
+                duration: 1000,
+              })
+              that.setData({
+                lastTimeSendMess: nowTime, //重置上次发评论的时间戳
+                inputContent: '',
+                isReplyComment: false,
+                parent_id: null
+              })
+            } else {
+              resolve(res)
+              console.log("request success, but response fail: ", res)
+              wx.showToast({
+                title: '发送失败'
+              })
+            }
+          }, fail(msg) {
+            reject(msg)
+            wx.showToast({
+              title: '系统异常'
+            })
+            // console.log(msg)
+          }
+        })
       })
-      that.getComment()
-      that.sendMess(res.result.reply_id)
-    })
-  },
+      await submitReplyPromise
+    } else {
+      let submitReplyPromise = new Promise((resolve, reject) => {
+        wx.request({
+          url: app.globalData.api_url + 'reply',
+          method: 'POST',
+          header: {
+            'Authorization': 'Bearer ' + app.globalData.accessToken
+          },
+          data: {
+            postId: that.data.post_id,
+            content: that.data.inputContent,
+            toOpenId: that.data.to_open_id,
+            parentId: that.data.parent_id
+          },
+          success(res) {
+            if (res.data.code == 200) {
+              console.log("success:", res)
+              resolve(res)
+              //发送成功提示
+              wx.showToast({
+                title: '发送成功',
+                icon: 'success',
+                duration: 1000,
+              })
+              that.setData({
+                lastTimeSendMess: nowTime, //重置上次发评论的时间戳
+                inputContent: '',
+                isReplyComment: false,
+                parent_id: null
+              })
 
-  // 发送留言消息
-  sendMess: function(reply_id) {
-    var that = this
-    var mess = [reply_id, 0]
-    wx.cloud.callFunction({
-      name: 'send_mess',
-      data: {
-        to_open_id: that.data.post.open_id,
-        mess: mess,
-      }
-    }).then(res => {
-      // console.log(res)
+            } else {
+              resolve(res)
+              console.log("request success, but response fail: ", res)
+              wx.showToast({
+                title: '发送失败'
+              })
+            }
+          }, fail(msg) {
+            reject(msg)
+            wx.showToast({
+              title: '系统异常'
+            })
+            // console.log(msg)
+          }
+        })
+      })
+      await submitReplyPromise
+    }
+    
+    this.setData({
+      pageNum: 1,
+      comment_data: []
     })
+    await this.getComment()
   },
 
   //获得帖子
-  getPost: function() {
-
-    const db = wx.cloud.database()
+  getPost: async function() {
     var that = this
-    var post_id = parseInt(this.data.post_id)
-    db.collection("Post").where({
-      post_id: post_id
-    }).get().then(res => {
-      // console.log("post是否存在",res)
-      if(res.data[0] == undefined){ //没有该帖子 
-        that.setData({
-          isDeleted : true,
-        })
-        return;
-      }
-      let typeName = that.getTypeName(res.data[0].post_type,res.data[0].goods_type)
-      that.setData({
-        typeName:typeName,
-        to_open_id: res.data[0].open_id, //初始化为回复贴主
-        post: res.data[0]
-      })
+    
+    // 获取帖子
+    let postDataPromise = new Promise((resolve, reject) => {
+      wx.request({
+        url: app.globalData.api_url + 'post/selectOne/' + that.data.post_id.toString(),
+        method: 'GET',
+        header: {
+          'Authorization': 'Bearer ' + app.globalData.accessToken
+        },
+        data: {
+          //postId: that.data.post_id
+        },
+        success(res) {
+          if (res.data.code == 200) {
+            console.log("success:", res)
+            resolve(res)
 
-    }).then(res => {
-      that.getComment() //获取该帖子的评论
-    }).then(res => {
-      db.collection("Message").where({ //是否已经收藏
-        open_id: app.globalData.userInfo.open_id
-      }).get().then(res => {
-        var fav = res.data[0].my_collection
-        for (let i = 0; i < fav.length; ++i) {
-          if (fav[i] == post_id) {
+            let typeName = that.getTypeName(res.data.data.postType, res.data.data.goodsType)
             that.setData({
-              isFavourite: true,
-              isFavouriteOri: true,
+              post: res.data.data,
+              typeName: typeName,
+              to_open_id: res.data.data.openId, //初始化为回复贴主
             })
-            break
+          } else {
+            resolve(res)
+            console.log("request success, but response fail: ", res)
+            wx.showToast({
+              title: '获取帖子失败'
+            })
           }
+        }, fail(msg) {
+          reject(msg)
+          wx.showToast({
+            title: '系统异常'
+          })
+          // console.log(msg)
         }
       })
+    })
+
+    await postDataPromise
+    console.log("postDataPromise")
+    if (JSON.stringify(that.data.post) == '{}' || that.data.post.status != 1) {
+      wx.showToast({
+        title: '获取帖子失败',
+        icon: 'success'
+      })
+      return ;
+    }
+    await this.getComment()
+    console.log("getComment()")
+    await this.getCollection()
+    console.log("collectionsDataPromise")
+    
+  },
+  // 显示判断更多
+  judgeHasMore: async function() {  //判断是否需要隐藏部分内容,显示查看更多按钮
+    let that = this;
+
+    for (let i = (that.data.pageNum-2) * that.data.pageSize;  i < that.data.comment_data.length; ++i) {
+      if (that.data.comment_data[i].replys.length > 0) {
+        that.data.comment_data[i].hideOverFlow = false;  
+        that.data.comment_data[i].hasButton = true;
+      }
+    }
+    that.setData({
+      comment_data: that.data.comment_data
     })
   },
   // 获取评论
-  getComment: function() {
+  getComment: async function() {
     var that = this
-    var post_id = that.data.post_id
     that.data.hasMore = true
 
-    return wx.cloud.callFunction({
-      name: 'get_comment',
-      data: {
-        post_id: parseInt(post_id)
-      }
-    }).then(res => {
-      var data = [] 
-      for (var i in res.result){ //把对象转换为数组
-        data.push(res.result[i]) 
-      }
-      that.setData({
-        comment_data: data,
-        count: that.data.pageSize,
-        total: data.length
+    return new Promise((resolve, reject) => {
+      wx.request({
+        url: app.globalData.api_url + 'reply/selectAll/' + that.data.post_id.toString(),
+        method: 'GET',
+        header: {
+          'Authorization': 'Bearer ' + app.globalData.accessToken
+        },
+        data: {
+          pageNum: that.data.pageNum,
+          pageSize: that.data.pageSize
+        },
+        success(res) {
+          if (res.data.code == 200) {
+            console.log("success:", res)
+            resolve(res)
+            if (res.data.data && res.data.data.length) {
+              that.setData({
+                pageNum: that.data.pageNum + 1,
+                comment_data: that.data.comment_data.concat(res.data.data),
+              })
+              that.judgeHasMore()
+            }
+          } else {
+            resolve(res)
+            console.log("request success, but response fail: ", res)
+            wx.showToast({
+              title: '获取留言失败'
+            })
+          }
+        }, fail(msg) {
+          reject(msg)
+          wx.showToast({
+            title: '系统异常'
+          })
+          // console.log(msg)
+        }
       })
-      this.judgeHasMore()
     })
   },
-  judgeHasMore() {  //判断是否需要隐藏部分内容,显示查看更多按钮
-    let that = this;
-    const query = wx.createSelectorQuery();
-    query.selectAll('.showFont').fields({
-      size: true,
-    }).exec(function (res) {
-      // console.log(res, '所有节点信息')
-      let lineHeight = 20 //样式中写死的行高，单位px
+  // 获取收藏
+  getCollection: async function() {
+    var that = this
 
-      for (let i = 0; i < res[0].length; i++) {
-        // console.log(res[0][i].height)
-        if (res[0][i].height / lineHeight > 3) {
-          that.data.comment_data[i][0].hasButton = true
-          that.data.comment_data[i][0].hideOverFlow = true;
+    return new Promise((resolve, reject) => {
+      wx.request({
+        url: app.globalData.api_url + 'collection/selectAll',
+        method: 'GET',
+        header: {
+          'Authorization': 'Bearer ' + app.globalData.accessToken
+        },
+        data: {
+        },
+        success(res) {
+          if (res.data.code == 200) {
+            console.log("success:", res)
+            resolve(res)
+            
+            var collections = res.data.data
+            for (let i = 0; i < collections.length; ++i) {
+              if (collections[i].postId == that.data.post_id) {
+                that.setData({
+                  collectionData: collections[i],
+                  isFavourite: true,
+                  isFavouriteOri: true,
+                })
+                break
+              }
+            }
+            
+          } else {
+            resolve(res)
+            console.log("request success, but response fail: ", res)
+          }
+        }, fail(msg) {
+          wx.showToast({
+            title: '系统异常'
+          })
+          reject(msg)
+          console.log(msg)
         }
-      }
-      that.setData({
-        comment_data: that.data.comment_data
       })
     })
   },
@@ -268,10 +453,10 @@ Page({
     var that = this
     let reply_id = e.currentTarget.dataset.reply_id
     for(let comment of this.data.comment_data){
-      if (comment[0].reply_id == reply_id){
-        comment[0].hideOverFlow = comment[0].hideOverFlow ? false : true
+      if (comment.replyId == reply_id){
+        comment.hideOverFlow = comment.hideOverFlow ? false : true
         that.setData({
-          comment_data:that.data.comment_data
+          comment_data: that.data.comment_data
         })
         break
       }
@@ -279,26 +464,26 @@ Page({
   },
   getTypeName: function (post_type, goods_type) {//用于判断帖子类型名称
     let name
-    if(post_type == 0 || post_type == 1){
-      if(goods_type == 0){
+    if(post_type == 1 || post_type == 2){
+      if(goods_type == 1){
         name = '二手书'
       }
-      else if(goods_type ==1){
+      else if(goods_type ==2){
         name = '二手车'
       }
-      else if(goods_type == 2){
+      else if(goods_type == 3){
         name = '数码'
       }
-      else if(goods_type == 3){
+      else if(goods_type == 4){
         name = '家电'
       }else{
         name = '其他'
       }
     }
-    else if(post_type == 2){
+    else if(post_type == 3){
       name = '失物招领'
     }
-    else if(post_type == 3){
+    else if(post_type == 4){
       name = '义捐活动'
     }
     return name;
@@ -309,31 +494,86 @@ Page({
     this.setData({
       isFavourite: !this.data.isFavourite
     });
+    
   },
   // 改变收藏
-  changeCollection: function() {
+  changeCollection: async function() {
     var that = this
-    wx.cloud.callFunction({
-      name: 'change_collection',
-      data: {
-        open_id: app.globalData.userInfo.open_id,
-        post_id: that.data.post.post_id,
-      }
-    }).then(res => {
-      // console.log(res)
-    })
+
+    if (that.data.isFavourite) {
+      console.log("收藏")
+      return new Promise((resolve, reject) => {
+        wx.request({
+          url: app.globalData.api_url + 'collection',
+          method: 'POST',
+          header: {
+            'Authorization': 'Bearer ' + app.globalData.accessToken
+          },
+          data: {
+            postId: that.data.post_id,
+            openId: app.globalData.userInfo.openId
+          },
+          success(res) {
+            if (res.data.code == 200) {
+              console.log("success:", res)
+              resolve(res)
+            } else {
+              resolve(res)
+              console.log("request success, but response fail: ", res)
+            }
+          }, fail(msg) {
+            reject(msg)
+            wx.showToast({
+              title: '系统异常'
+            })
+            console.log(msg)
+          }
+        })
+      })
+    } else {
+      console.log("取消收藏")
+
+      return new Promise((resolve, reject) => {
+        wx.request({
+          url: app.globalData.api_url + 'collection/' + that.data.collectionData.collectionId,
+          method: 'DELETE',
+          header: {
+            'Authorization': 'Bearer ' + app.globalData.accessToken
+          },
+          data: {
+            postId: that.data.post_id,
+            openId: app.globalData.userInfo.openId
+          },
+          success(res) {
+            if (res.data.code == 200) {
+              console.log("success:", res)
+              resolve(res)
+            } else {
+              resolve(res)
+              console.log("request success, but response fail: ", res)
+            }
+          }, fail(msg) {
+            reject(msg)
+            wx.showToast({
+              title: '系统异常'
+            })
+            // console.log(msg)
+          }
+        })
+      })
+    }
   },
   //轮播图的显示
   previewCarousel:function(event){
 
     let currentImgId = event.currentTarget.dataset.img_id
-    let currentImgPath = 'cloud://envir-i8vdp.656e-envir-i8vdp/image/' + currentImgId + '.jpg'
-    let imgs = this.data.post.image
+    let currentImgPath = this.data.imageUrl + currentImgId.imageUrl
+    let imgs = this.data.post.images
     let imgsPath = []
 
     for(let img_id of imgs){ //urls
-      // console.log("img_id",img_id)
-      imgsPath.push('cloud://envir-i8vdp.656e-envir-i8vdp/image/' + img_id + '.jpg')
+      console.log("img_id",img_id)
+      imgsPath.push(this.data.imageUrl + img_id.imageUrl)
     }
 
     wx.previewImage({
@@ -341,27 +581,66 @@ Page({
       urls: imgsPath
     })
   },
+  // 进行举报
+  gotoReport: function() {
+    var that = this
+    this.setData({
+      hiddenReport: !that.data.hiddenReport
+    })
+  },
+  // 取消举报
+  cancelReport: function() {
+    var that = this
+    this.setData({
+      hiddenReport: !that.data.hiddenReport
+    })
+  },
+  // 确认举报
+  confirmReport: async function(e) {
+    var that = this
+    
+    const reportMess = e.detail.value.reportMess
+    console.log(reportMess)
 
-  /** 排序 */
-  showModal(e) {
-    this.setData({
-      modalName: e.currentTarget.dataset.target
-    })
-  },
-  hideModal(e) {
-    this.setData({
-      modalName: null
-    })
-  },
-  getSort(e) {
-    if (this.data.sortBy != e.currentTarget.dataset.target) {
-      this.data.comment_data.reverse()
-      this.setData({
-        comment_data: this.data.comment_data
+    let reportPromise = new Promise((resolve, reject) => {
+      wx.request({
+        url: app.globalData.api_url + 'report',
+        method: 'POST',
+        header: {
+          'Authorization': 'Bearer ' + app.globalData.accessToken
+        },
+        data: {
+          postId: that.data.post.postId,
+          remark: reportMess
+        },
+        success(res) {
+          if (res.data.code == 200) {
+            console.log("success:", res)
+            resolve(res)
+            wx.showToast({
+              title: '举报成功'
+            })
+          } else {
+            resolve(res)
+            console.log("request success, but response fail: ", res)
+            wx.showToast({
+              title: '举报失败'
+            })
+          }
+        }, fail(msg) {
+          reject(msg)
+          console.log(msg)
+          wx.showToast({
+            title: '系统异常'
+          })
+        }
       })
-    }
+    })
+    await reportPromise
+
     this.setData({
-      sortBy: e.currentTarget.dataset.target
+      hiddenReport: !that.data.hiddenReport
     })
   },
+
 })

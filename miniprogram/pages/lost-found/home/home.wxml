@@ -1,23 +1,31 @@
 <!--miniprogram/pages/lost-found/home/home.wxml-->
+<view wx:if="{{isWaiting}}" style='height:100%;width:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;background-color: rgb(253, 254, 255);'>
+    <image src="https://image.weilanwl.com/gif/loading-1.gif" mode="aspectFit" class="gif-white response" style="height:35%;padding-bottom:10%;"></image>
+</view>
+
 <!-- 搜索框 -->
 <view class="top-box cu-bar search bg-white">
   <!-- 个人头像 -->
-  <image class="cu-avatar round" wx:if="{{open_id}}" src='cloud://envir-i8vdp.656e-envir-i8vdp/avatar/{{open_id}}.jpg' bindtap='gotoMylogs'></image>
+  <view>
+  <image class="cu-avatar round" wx:if="{{open_id}}" src='{{imageUrl + headPortraitUrl}}' bindtap='gotoMylogs'></image>
+  <text class='icon-title text-red relative'  wx:if="{{hasNewInfo}}"></text>
+  </view>
   <!-- 搜索 -->
   <view class="search-form round">
     <text class="icon-search"></text>
-    <input type="text" placeholder="搜索图片、文章、视频" confirm-type="search" bindinput='search'></input>
+    <input type="text" placeholder="搜索帖子" confirm-type="search" bindinput='searchInput'></input>
+    <image class="cu-avatar round" src='/images/enter_logo.gif' bindtap='search'></image>
   </view>
   <!-- 学校 -->
   <!-- bindtap='selectSchool' -->
   <!-- <text class="icon-triangledownfill"></text> -->
   <view class="action" >
-    <image class="cu-avatar round" wx:if="{{school_id}}" src='cloud://envir-i8vdp.656e-envir-i8vdp/school_logo/{{school_id}}.jpg'></image>
+    <image class="cu-avatar round" wx:if="{{school_id}}" src='/images/school_logo.jpg'></image>
   </view>
 </view>
 
 <view class='title-box'>
-  <image wx:if="{{school_id}}" src='cloud://envir-i8vdp.656e-envir-i8vdp/school_logo/{{school_id}}.jpg' mode='widthFix' style='border-radius:50px;overflow:hidden;width:20%;'></image>
+  <image wx:if="{{school_id}}" src='/images/school_logo.jpg' mode='widthFix' style='border-radius:50px;overflow:hidden;width:20%;'></image>
   <view style='margin-left:20px;height:80%;'>
     <!-- 所在学校 -->
     <view style='font-size:14px;font-weight:bolder;' wx:if="{{school_name}}">
@@ -33,18 +41,18 @@
 
 <view style='margin-bottom:130rpx;'>
   <view class='post-box'>
-    <view class="cu-card dynamic" style='width:100%;' wx:for="{{nowShowData}}" wx:key="" bindtap="gotoDetail" data-url="{{item.post_id}}" wx:if="{{!item.isHidden}}">
+    <view class="cu-card dynamic" style='width:100%;' wx:for="{{nowShowData}}" wx:key="" bindtap="gotoDetail" data-url="{{item.postId}}" wx:if="{{!item.isHidden}}">
       <view class="cu-item shadow" style='margin:2% 0;position:relative'>
 
         <!-- 发帖人信息 -->
         <view class="cu-list menu-avatar">
           <view class="cu-item">
             <!-- 头像 -->
-            <image class="cu-avatar round" src='cloud://envir-i8vdp.656e-envir-i8vdp/avatar/{{item.open_id}}.jpg'></image>
+            <image class="cu-avatar round" src='{{imageUrl + item.headPortraitUrl}}'></image>
             <view class="content flex-sub text-sm">
               <!-- 名字 -->
               <!-- <view>凯尔</view> -->
-              <view>{{nickname[item.open_id]}}</view>
+              <view>{{item.nickname}}</view>
               <!-- 日期 -->
               <view class="text-gray text-sm flex justify-between">
                 {{item.date}}
@@ -62,7 +70,7 @@
         </view>
         <!-- 帖子首图 -->
         <view class="grid flex-sub padding-lr" style='height:255px;'>
-          <image src='cloud://envir-i8vdp.656e-envir-i8vdp/image/{{item.image[0]}}.jpg' mode='aspectFill' lazy-load='true'></image>
+          <image src="{{imageUrl + item.images[0].imageUrl}}" mode='aspectFill' lazy-load='true'></image>
         </view>
 
       </view>

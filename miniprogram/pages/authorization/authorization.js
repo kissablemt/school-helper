@@ -54,7 +54,7 @@ Page({
                   iv: e.detail.iv
                 },
                 success(res) {
-                  // console.log("[debug] ", res)
+                  console.log("[debug] ", res)
                   if (res.data.data) {
                     app.globalData.accessToken = res.data.data;
                     wx.setStorageSync('accessToken', res.data.data);
@@ -121,7 +121,7 @@ Page({
       wx.getSetting({
         success(res) {
           if (res.authSetting['scope.userInfo']) {
-            // console.log("[success] getSetting: ", res)
+            console.log("[success] getSetting: ", res)
             wx.getUserInfo({
               success(res) {
                 console.log("[success] getSetting => getUserInfo")

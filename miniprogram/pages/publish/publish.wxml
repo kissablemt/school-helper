@@ -61,10 +61,10 @@
       <text class='inTitle'>价钱</text>
       <input class='inContent' type='digit' placeholder='商品价钱' bindinput='input_price'></input>
     </view>
-    <view class='info-items'>
+    <!-- <view class='info-items'>
       <text class='inTitle'>联系方式</text>
       <input class='inContent' type='text' placeholder='联系方式' bindinput='input_contact'></input>
-    </view>
+    </view> -->
     <!--
       @author 星星星
       @date 2019/5/17
