@@ -1,7 +1,18 @@
 /* miniprogram/pages/mylogs/info/info.wxss */
+
 .bar {
   display: flex;
   align-items: center;
+}
+
+.oneline {
+  display: -webkit-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-wrap: break-word;
+  white-space: normal !important;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
 }
 
 .text-content text {
@@ -14,16 +25,17 @@
   -webkit-box-orient: vertical;
 }
 
-.info-items{
-    padding: 2rpx 0;
-    display: flex;
-    justify-content: space-between;
-    
-    align-items: center;
+.info-items {
+  padding: 2rpx 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
+
 .infoContent {
   flex: 36;
 }
-.infotext{
-    flex:1;
+
+.infotext {
+  flex: 1;
 }

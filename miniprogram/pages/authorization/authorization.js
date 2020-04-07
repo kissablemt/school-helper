@@ -155,6 +155,7 @@ Page({
           if (res.data.ok) {
             console.log("[success] getUserInfo")
             app.globalData.userInfo = res.data.data
+            wx.setStorageSync("userInfo", res.data.data)
             // app.globalData.schoolId = res.data.data.schoolId
             app.globalData.open_id = res.data.data.openId
             app.globalData.school_id = res.data.data.schoolId

@@ -1,33 +1,32 @@
 <!-- <button wx:if="{{canIUse}}" open-type="getUserInfo" bindgetuserinfo="bindGetUserInfo">授权登录</button> -->
 <view class="info-cont">
   <view class="infoMain">
-    <!--photo-->
-     <!-- bindtap="setPhotoInfo" -->
-    <view class="info-items">
+
+    <!-- avatar -->
+    <view class="info-items" bindtap="changeAvatar">
       <text>头像</text>
       <view class="infotext">
-        <image wx:if="{{open_id}}" class="userinfo-avatar" src="cloud://envir-i8vdp.656e-envir-i8vdp/avatar/{{open_id}}.jpg" background-size="cover"></image>
-
+        <image wx:if="{{userInfo.headPortraitUrl}}" class="userinfo-avatar" src="{{file_url + userInfo.headPortraitUrl}}" background-size="cover"></image>
       </view>
-    </view> 
+    </view>
 
-    <!--name-->
-    <view class="info-items" bindtap="setName">
+    <!-- nickname -->
+    <view class="info-items" bindtap="bindChangeName">
       <text>名字</text>
       <view class="infotext">
         <text class="info-motto">{{userInfo.nickname}}</text>
       </view>
     </view>
-    <view class='wrapper' hidden="{{hiddenmodalput}}">
+    <view class='wrapper' hidden="{{modelName}}">
       <view class='shadow'>
         <view class='popUp'>
           <view class='title'>修改姓名</view>
-          <form bindsubmit='confirmM'>
+          <form bindsubmit='confirmName'>
             <view class='content'>
-              <input type='text' name="nickname" placeholder="请输入名字.." auto-focus=''></input>
+              <input type='text' name="nickname" value="{{userInfo.nickname}}" auto-focus='' style="margin:20px;"></input>
             </view>
             <view class='foot'>
-              <button bindtap='cancelM' class='cancel-btn'>取消</button>
+              <button bindtap='cancelName' class='cancel-btn'>取消</button>
               <button formType="submit" class='confirm-btn'>确定</button>
             </view>
           </form>
@@ -35,32 +34,23 @@
       </view>
     </view>
 
-
-    <!--school-->
-    <view class="info-items" bindtap='getSchool'>
-      <text>学校</text>
-      <view class="infotext">
-        <text class='info-motto'>{{userInfo.school.name}}</text>
-      </view>
-    </view>
-
-    <!--telphone-->
-    <view class='info-items' bindtap='getContact_way'>
+    <!-- contactway -->
+    <view class='info-items' bindtap='bindChangeContact'>
       <text>联系方式</text>
       <view class='infotext'>
-        <text class="info-motto">{{userInfo.contact_way}}</text>
+        <text class="info-motto">{{userInfo.contactWay?userInfo.contactWay:'无'}}</text>
       </view>
     </view>
-    <view class='wrapper' hidden="{{phonemodalInput}}">
+    <view class='wrapper' hidden="{{modelContact}}">
       <view class='shadow'>
         <view class='popUp'>
           <view class='title'>联系方式</view>
-          <form bindsubmit='confirmP'>
+          <form bindsubmit='confirmContact'>
             <view class='content'>
-              <input type='text' name="contact_way" placeholder="请输入联系方式.." auto-focus=''></input>
+              <input type='text' name="contactWay" placeholder="请输入联系方式.." auto-focus='' style="margin:20px;" value="{{userInfo.contactWay}}"></input>
             </view>
             <view class='foot'>
-              <button bindtap='cancelP' class='cancel-btn'>取消</button>
+              <button bindtap='cancelContact' class='cancel-btn'>取消</button>
               <button formType="submit" class='confirm-btn'>确定</button>
             </view>
           </form>
@@ -68,28 +58,13 @@
       </view>
     </view>
 
-
-    <!--
-        @author 星星星
-        @date 2019/5/15
-        @description 暂时没有实现 爱心值 与 信用值的操作 
-      -->
-
-    <!--love_value-->
-    <!-- <view class='info-items'>
-      <text>爱心值</text>
-      <view class='infotext'>
-        <text>{{userInfo.love_value}}</text>
-      </view>
-    </view> -->
-
     <!--faith_value-->
-    <!-- <view class='info-items'>
+    <view class='info-items'>
       <text>信用值</text>
       <view class='infotext'>
-        <text>{{userInfo.faith_value}}</text>     
+        <text class="info-motto">{{userInfo.faithValue}}</text>
       </view>
-    </view> -->
+    </view>
 
     <!--info-->
     <view class="info-items" bindtap="getInfo">

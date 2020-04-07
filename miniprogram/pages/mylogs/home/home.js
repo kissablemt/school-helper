@@ -4,147 +4,167 @@ const app = getApp()
 
 Page({
   data: {
-   
-    hiddenmodalput: true,
     /*名字模态框*/
-    phonemodalInput: true, 
+    modelName: true,
     /*手机模态框*/
-    userInfo: {}, 
-    open_id: null,
+    modelContact: true,
+
     hasUserInfo: false,
-    hasNewInfo:false,
+    hasNewInfo: false,
+
+    file_url: app.globalData.file_url,
+    api_url: app.globalData.api_url,
   },
-  //事件处理函数   
-  bindViewTap: function() {
-    wx.navigateTo({
-      url: '../logs/logs'
-    })
+
+  debug: function () {
+    wx.setStorageSync('userInfo', this.data.userInfo)
   },
-  onLoad: function() { 
+
+  onLoad: function () {
     var that = this
     this.setData({ //获取globalData中的数据
-      userInfo: getApp().globalData.userInfo,
-      open_id: getApp().globalData.userInfo.open_id,
-    }) 
-    
+      userInfo: app.globalData.userInfo,
+      accessToken: app.globalData.accessToken,
+    })
   },
-  onShow: function() {
-    this.judgeNewInfo()  //show的时候判断是否有新info
+
+  updateUserInfo: function () {
+    var that = this
+    return new Promise(function (resolve, reject) {
+      wx.request({
+        url: app.globalData.api_url + 'user',
+        method: 'PUT',
+        header: {
+          'Authorization': 'Bearer ' + app.globalData.accessToken
+        },
+        data: that.data.userInfo,
+        success(res) {
+          if (res.data.ok) {
+            console.log("[success] updateUserInfo: ", res)
+            resolve(true)
+          }
+        }
+      })
+    })
   },
-  //更换头像   
-  setPhotoInfo: function() {
+
+  //更换头像  
+  changeAvatar: function () {
     var that = this;
-    var open_id = that.data.open_id;
+    var open_id = that.data.userInfo.openId;
+    var og_avatar = that.data.headPortraitUrl
     wx.chooseImage({
       count: 1, //默认9
       sizeType: ['original', 'compressed'], //可以指定是原图还是压缩图，默认是二者都有
       sourceType: ['camera', 'album'], //可以指定来源是相机还是相册，默认是二者都有
-      success: function(res) {
-        var tempFilePath = res.tempFilePaths[0]
+      success: function (res) {
+        var url = res.tempFilePaths[0]
+        var type = url.substr(url.lastIndexOf('.') + 1)
+        that.base64(url, type).then(res => {
+          var base64Str = res
+          wx.request({
+            url: app.globalData.api_url + 'user/headPortrait',
+            method: 'PUT',
+            header: {
+              'Authorization': 'Bearer ' + app.globalData.accessToken
+            },
+            data: {
+              "headPortrait": base64Str
+            },
+            success(res) {
+              if (res.data.code == 200) {
+                that.data.userInfo.headPortraitUrl = res.data.data
+                that.setData({
+                  userInfo: that.data.userInfo
+                })
+                console.log("[success] changeAvatar")
+              } else if (res.data.code == 500) {
+                wx.showToast({
+                  title: '图片内容涉嫌违规',
+                  icon: 'none'
+                })
+                console.log("[fail] changeAvatar: 含有敏感照片")
+              } else { }
 
-        wx.cloud.uploadFile({
-          cloudPath: 'avatar/' + open_id + '.jpg',
-          filePath: tempFilePath,
-          success: function(res) { //上传图片成功
-            console.log(res)
-
-            that.setData({
-              open_id:1
-            })
-            setTimeout(function(){
-              console.log("执行了")
-              that.setData({
-                open_id: open_id
-              })
-            },2000)
-          }
+              that.debug()
+            }
+          })
         })
       },
     })
   },
+  base64(url, type) {
+    return new Promise((resolve, rejiect) => {
+      wx.request({
+        url: url,
+        responseType: 'arraybuffer',
+        success: res => {
+          let base64Url = wx.arrayBufferToBase64(res.data); //把arraybuffer转成base64
+          resolve(base64Url)
+        }
+      });
+    })
+  },
+
   //更改名字
-  setName: function() {
+  bindChangeName: function () {
     this.setData({
-      hiddenmodalput: false
+      modelName: false
     })
   },
-  /*模态框取消*/
-  cancelM: function(e) {
+  /*取消更改名字*/
+  cancelName: function (e) {
     this.setData({
-      hiddenmodalput: true,
+      modelName: true,
     })
   },
-  //模态框确认
-  confirmM: function(e) {
-
+  //确认更改名字
+  confirmName: function (e) {
     var that = this
-    const db = wx.cloud.database()
-    const name = e.detail.value.nickname
-    const open_id = that.data.userInfo.open_id;
+    that.data.userInfo.nickname = e.detail.value.nickname
+    this.setData({
+      userInfo: that.data.userInfo,
+      modelName: true,
+    })
+    that.updateUserInfo().then(res => {
+      that.debug()
+    })
+  },
 
-    that.data.userInfo['nickname'] = name;
-    this.setData({
-      hiddenmodalput: true,
-      userInfo: that.data.userInfo
-    })
-    wx.cloud.callFunction({
-      name: 'updateBy_id',
-      data: {
-        table: "User",
-        id_name: "open_id",
-        id_value: open_id,
-        mydata: {
-          nickname: name
-        }
-      }
-    }).then(res => {
-      console.log("res:", res)
-    })
-  },
-  /*获取手机号*/
 
-  getContact_way: function(e) {
+  // 修改联系方式
+  bindChangeContact: function (e) {
     this.setData({
-      phonemodalInput: false
+      modelContact: false
     })
   },
-  cancelP: function(e) {
+  cancelContact: function (e) {
     this.setData({
-      phonemodalInput: true,
+      modelContact: true,
     })
   },
-  confirmP: function(e) {
+  confirmContact: function (e) {
     var that = this
-    var contact_way = e.detail.value.contact_way
-    console.log(contact_way)
-    that.data.userInfo['contact_way'] = contact_way;
-    that.setData({
-      phonemodalInput: true,
-      userInfo: that.data.userInfo
+    var contactWay = e.detail.value.contactWay
+    that.data.userInfo.contactWay = contactWay
+    this.setData({
+      userInfo: that.data.userInfo,
+      modelContact: true,
     })
-    wx.cloud.callFunction({
-      name: 'updateBy_id',
-      data: {
-        table: "User",
-        id_name: "open_id",
-        id_value: that.data.userInfo.open_id,
-        mydata: {
-          contact_way: contact_way
-        }
-      }
-    }).then(res => {
-      console.log("res:", res)
+    that.updateUserInfo().then(res => {
+      that.debug()
     })
-
   },
-  judgeNewInfo:function(){//判断是否有新消息
+
+
+  judgeNewInfo: function () { //判断是否有新消息
     var that = this
     const db = wx.cloud.database()
     db.collection('Message').where({
       open_id: that.data.userInfo.open_id
     }).get().then(res => {
       // console.log("res", res)
-      let infos = res.data[0].my_mess 
+      let infos = res.data[0].my_mess
       for (let data of infos) {
         if (data[1] == 0) { //有新的info
           that.setData({
@@ -157,25 +177,25 @@ Page({
   },
 
   /*前往我的消息*/
-  getInfo: function(e) {
+  getInfo: function (e) {
     wx.navigateTo({
       url: '../info/info',
     })
   },
   /*前往发布的帖子*/
-  getPost: function(e) {
+  getPost: function (e) {
     wx.navigateTo({
       url: '../post/post',
     })
   },
   /*前往收藏的帖子*/
-  getFavorite: function(e) {
+  getFavorite: function (e) {
     wx.navigateTo({
       url: '../favorite/favorite',
     })
   },
 
-  bindGetUserInfo: function(e) {
+  bindGetUserInfo: function (e) {
     console.log(e.detail.userInfo)
   }
 

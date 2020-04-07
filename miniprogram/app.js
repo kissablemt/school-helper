@@ -1,20 +1,62 @@
 //app.js
 let regeneratorRuntime = require("/utils/regenerator-runtime/runtime") //本地异步所需js
 App({
-  onLaunch: function() {
+  onLaunch: function () {
+    // test
+    this.globalData.userInfo = wx.getStorageSync('userInfo')
+    this.globalData.accessToken = wx.getStorageSync('accessToken')
+  },
 
+  myRequest: function (parm) {
     var that = this
-    // if (!wx.cloud) {
-    //   console.error('请使用 2.2.3 或以上的基础库以使用云能力')
-    // } else {
-    //   wx.cloud.init({
-    //     traceUser: true,
-    //   })
-    // }
+    var ret = {}
+
+    return new Promise(function (resolve, reject) {
+      wx.request({
+        url: that.globalData.api_url + parm.api,
+        method: parm.method,
+        header: {
+          'Authorization': 'Bearer ' + that.globalData.accessToken,
+        },
+        data: parm.data,
+        success(res) {
+          switch (res.data.code) {
+            case 200:
+              ret.ok = true
+              ret.msg = `[success] `
+              break;
+            case 401:
+              ret.msg = `[permission denied] `
+              break;
+            case 500:
+              ret.msg = `[fail] `
+              break;
+            case 555:
+              ret.msg = `[system busy] `
+              break;
+            case 10001:
+              ret.msg = `[verify fail]] `
+              break;
+          }
+          ret.result = res
+          ret.msg = `${ret.msg} ${parm.api} ${parm.name}`
+          resolve(ret)
+
+        },
+        fail(res) {
+          reject(res)
+        }
+      })
+
+    }).catch(err => {
+      ret.msg = `[uncaught] ${err} ${parm.name}`
+      ret.error = err
+      return ret
+    })
   },
 
   // 不知道什么用
-  editTabbar: function() {
+  editTabbar: function () {
     let tabbar = this.globalData.tabBar;
     let currentPages = getCurrentPages();
     let _this = currentPages[currentPages.length - 1];
@@ -39,23 +81,23 @@ App({
       "color": "#979795",
       "selectedColor": "#1c1c1b",
       "list": [{
-          "pagePath": "/pages/index/index",
-          "iconPath": "icon/index.png",
-          "selectedIconPath": "icon/index_green.png",
-          "text": "首页"
-        },
-        {
-          "pagePath": "/pages/publish/publish",
-          "iconPath": "icon/publish.png",
-          "isSpecial": true,
-          "text": "发布"
-        },
-        {
-          "pagePath": "/pages/more/more",
-          "iconPath": "icon/more.png",
-          "selectedIconPath": "icon/more_green.png",
-          "text": "更多"
-        }
+        "pagePath": "/pages/index/index",
+        "iconPath": "icon/index.png",
+        "selectedIconPath": "icon/index_green.png",
+        "text": "首页"
+      },
+      {
+        "pagePath": "/pages/publish/publish",
+        "iconPath": "icon/publish.png",
+        "isSpecial": true,
+        "text": "发布"
+      },
+      {
+        "pagePath": "/pages/more/more",
+        "iconPath": "icon/more.png",
+        "selectedIconPath": "icon/more_green.png",
+        "text": "更多"
+      }
       ]
     }
   },

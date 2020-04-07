@@ -6,35 +6,39 @@
   <!-- 管理/完成 -->
   <text class='icon-edit' style='position: absolute; right:5%; font-size:15px;' bindtap='toggleManage'>{{isManaging?'完成':'管理'}}</text>
   <text class='icon-close' style='position: absolute; right:25%; font-size:15px;' wx:if="{{isManaging}}" bindtap='deleteSelected'>删除</text>
+  <view style='position: absolute; left:25%; font-size:15px;' wx:if="{{isManaging}}" bindtap='toggleSelectAll'>
+    全选
+    <text class='{{(selectCount == message.length) ? "icon-check" : ""}}'></text>
+  </view>
 </view>
 
 <view class='post-box' style='padding:2.5%;'>
-  <!-- wx:for -->
-  <view class="cu-card dynamic"  style='display:flex;flex-direction: row; align-items:center; width:100%' wx:for="{{comment}}" wx:key="" wx:for-item="item">
+  <view class="cu-card article" style='position:relative;display:flex;flex-direction:row;align-items:center;width:100%;' wx:for="{{message}}" wx:key="" wx:for-item="item">
 
     <!-- 管理-选中后 -->
-    <view style='width:5%;font-size:18px;margin-right:4%; ' wx:if="{{isManaging}}" data-reply_id='{{item.reply_id}}'  bindtap='toggleSelect'>
+    <view style='width:5%;font-size:18px;margin:0 4%;' wx:if="{{isManaging}}" data-index='{{index}}' bindtap='toggleSelect'>
       <!-- 选项-未选中 -->
       <text class='icon-square' wx:if="{{!item.selected}}"></text>
       <!-- 选项-选中后 -->
       <text class='icon-squarecheckfill' wx:else></text>
     </view>
 
-    <!-- 消息内容 -->
-    <view class="cu-item shadow" style='margin:2% 0;position:relative;  width:100%;' data-post_id='{{item.post_id}}' bindtap='gotoPost'>
-      <view class="text-content">
-        <view class="text-gray text-sm flex justify-between info-items"> 
-          <view class='infoContent'>{{item.date}}</view> 
-          <text class='icon-title text-red infotext'  wx:if="{{item.isNewInfo}}"></text>
+    <view class="cu-item shadow" style='width:100%;height:200rpx;'>
+      <!-- 帖子内容 -->
+      <view class="content" data-postId="{{item.postId}}" bindtap='gotoPost' style="margin-top:30rpx;">
+        <view class="text-gray text-sm flex justify-between" style='position:absolute; right:3%; width:185rpx'>
+          {{item.date}}
         </view>
-        
-        <text>{{item.content}}</text>
-      </view>
+        <text class='icon-title text-red' wx:if="{{item.status==1}}" style="position:absolute; right:7%;"></text>
+        <view class="text-gray text-sm flex justify-between" style='position:relative; left:3%; width:185rpx;height:30rpx;'>
+          <text class="oneline">{{item.headline}}</text>
+        </view>
+        <!-- 帖子标题 -->
+        <view style='position:fixed;margin-top:10%;font-size:13px;font-weight:bold;width:80%;'>
+          <text class="text">"{{item.fromOpenName}}" 给你评论了，快去看看吧</text>
+        </view>
 
-      <!-- 原贴 -->
-      <view class='text-cut' style='margin:2.5%;padding:2.5%;width:95%;background-color:rgb(243,243,243);'>
-        來自：
-        <text>{{item.headline}}</text>
+
       </view>
     </view>
 

@@ -1,287 +1,122 @@
 // miniprogram/pages/mylogs/post/post.js
 const app = getApp()
+const utils = require("../../../utils/util.js")
 
-import regeneratorRuntime from '../../../utils/regenerator-runtime/runtime.js';
 Page({
   data: {
-    page: 1,
-    pageSize: 4,
-    dataCount: 0,
-    hasMoreData: true,
-    postData: [],
-    nowShowData: [],
-    nickname: {}
-  },
-  onShow: function() { 
-    var that = this
-    if (that.data.post_modify) {
-      console.log('onShow触发')
-      that.data.post_modify = false
-    }
-  },
-  onLoad: function (options) {
-    this.pageInit()
-    console.log("onLoad：Done")
-  },
-  // 页面初始化
-  pageInit: function () {
-    var that = this
-    if (app.globalData.initDone) { 
-      var r = that.get_individual_posts()
-      r.then(res => {
-        console.log("get_individual_posts: Done.", res)
-        that.setData({
-          nickname: app.globalData.nickname,
-          postData: res,
-          school_id: app.globalData.school_id,
-          open_id: app.globalData.userInfo.open_id
-        })
-        that.showPageData()
-      })
-    } else {
-      app.initCallback = res => {
-        if (res) {
-          let r = that.get_individual_posts()
-          r.then(res => {
-            console.log("get_individual_posts: Done.", res)
-            that.setData({
-              nickname: app.globalData.nickname,
-              postData: res,
-              school_id: app.globalData.school_id,
-              open_id: app.globalData.userInfo.open_id,
-            })
-            that.showPageData()
-          })
-        }
-      }
-    }
-  },
-  // 展示新页面
-  showPageData: function () {
+    post: [], // 包括是否被选择（selected字段）
+    isManaging: false, //管理与完成按钮切换
+    selectCount: 0,
 
-    var that = this
-    let page = that.data.page - 1
-    let pageSize = that.data.pageSize
-    let dataCount = that.data.postData.length
+    file_url: app.globalData.file_url,
+  },
 
-    that.setData({
-      nickname: that.data.nickname,
-      nowShowData: that.data.postData.slice(0, (page + 1) * pageSize)
-    })
-    if (dataCount / pageSize - 1 > page) { /*总页数小于当前页*/
-      that.data.hasMoreData = true
-    } else {
-      that.data.hasMoreData = false
-    }
-    that.data.page += 1
-    console.log("showPageData: Done")
+  onLoad: function (options) { },
+
+  onShow: function () {
+    this.onGetPost();
   },
-  // 下拉刷新
-  onReachBottom: function () {
+
+  async onGetPost() {
     var that = this
-    if (that.data.hasMoreData == true) {
-      that.showPageData()
-    } else {
-      console.log("没有更多数据")
+    var parm = {
+      api: '/post/selectAll',
+      method: 'GET',
+      name: '(获取用户发布的帖子)',
     }
-  },
-  onPullDownRefresh: function () {
-    var that = this
-    this.flushPost().then(res => { 
-      wx.stopPullDownRefresh()
+
+    var ret = await app.myRequest(parm)
+    if (ret.ok) {
+      console.log(ret.msg, ret.result.data.data)
+      var post = ret.result.data.data
+      for (var item of post) item.date = utils.formatTime(new Date(item.date)).substr(0, 10)
       that.setData({
-        postData: that.data.postData,
-        page: 1,
-        hasMoreData: true
+        post: post,
       })
-      that.showPageData()
-    })
-  },
-  flushPost: async function () { //帖子刷新
-    var that = this
-    const db = wx.cloud.database()
-    var newPostData = []
-    let sum, cnt = that.data.postData.length //一开始，跳过已经获取的数据
-
-    await db.collection('Post').where({ //获取当前post_type的帖子总数
-      open_id: app.globalData.userInfo.open_id
-    }).count().then(res => {
-      sum = res.total
-    })
-
-    while (cnt < sum) {
-      await db.collection('Post').where({ //循环获取所有新的数据
-        open_id: app.globalData.userInfo.open_id
-      }).orderBy('post_id', 'asc').skip(cnt).get()
-        .then(res => {
-          newPostData = newPostData.concat(res.data)
-        })
-      cnt += 20 //当跳出循环后，比起真正的数据多出20
+    } else {
+      console.log(ret.msg)
     }
-    that.data.postData = newPostData.concat(that.data.postData) //最新的数据放到开始,这里不需要刷新页面，就不setData
-    console.log("flushOK")
-    return new Promise(function (resolve, reject) {
-      resolve('ok')
-    })
-
-
-  },
-  showModal(e) {
-    this.setData({
-      modalName: e.currentTarget.dataset.target, //不能删除
-      curr_post_id: e.currentTarget.dataset.curr_post_id
-    })
-    console.log(this.data.curr_post_id)
-  },
-  hideModal(e) {
-    this.setData({
-      modalName: null //不能删除
-    })
   },
 
-  // 获取该人的帖子
-  get_individual_posts: function() {
+  toggleManage: function (e) {
     var that = this
-    return new Promise(function (resolve, reject) {
-      var i, j
-      var open_id = app.globalData.userInfo.open_id
-      var post = app.globalData.post
-      console.log(app.globalData.post)
-      var postData = []
-      for (i = 0; i < post.length; ++i) { 
-        for (j = 0; j < post[i].length; ++j) {
-          if (open_id == post[i][j].open_id)
-            postData.push(post[i][j])
-        }
-      }
-      // console.log(open_id)
-      // console.log("postData:",postData)
-      resolve(postData)
-    }) 
-  },
-  // 删除一个帖子
-  deleteOne: function() {
-    var del_list = []
-    var that = this
-    let page = that.data.page - 1
-    let pageSize = that.data.pageSize
-    let i, j
-
-    del_list.push(this.data.curr_post_id)
-    // console.log(app.globalData.post)
-    // console.log(that.data.postData) 
- 
-    // 本页面删除帖子
-    for (i=0; i < that.data.postData.length; ++i) {
-      if (that.data.postData[i].post_id == del_list[0]) {
-        that.data.postData.splice(i, 1)
-        break;
-      }
-    } 
-    console.log(that.data.postData)
-    // 本页面删除帖子后渲染 
     that.setData({
-      nowShowData: that.data.postData.slice(0, page * pageSize)
+      isManaging: that.data.isManaging == true ? false : true,
     })
-    console.log(del_list)
-    // 云端删除帖子
-    wx.cloud.callFunction({
-      name: 'del_post_records',
-      data: {
-        id: del_list 
-      }
-    }).then(res => {
-      console.log(res)
-    })
-    
-    // 本地删除帖子
-    for (i = 0; i < app.globalData.post.length; ++i) {
-      for (j = 0; j < app.globalData.post[i].length; ++j) {
-        if (del_list[0] == app.globalData.post[i][j].post_id) {
-          console.log(app.globalData.post[i][j])
-          app.globalData.post[i].splice(j, 1)
-          console.log(app.globalData.post)
-          console.log("deleteOne: Done")
-          return null;
-        }
-      }
-    } 
   },
-  // 修改post
-  editOne: function(data) {
-    var that = this
-    var edit_post_id = data.post_id
-    let page = that.data.page - 1
-    let pageSize = that.data.pageSize
-    let i, j
-    console.log(data)
-    console.log(app.globalData.post)
-    console.log(that.data.postData)
 
-    // 本页面修改帖子
-    for (i = 0; i < that.data.postData.length; ++i) {
-      if (that.data.postData[i].post_id == edit_post_id) {
-        that.data.postData[i] = data
-        break;
-      }
+  toggleSelect: function (e) {
+    var index = e.currentTarget.dataset.index
+    var post = this.data.post
+    var selectCount = this.data.selectCount
+    post[index].selected = (!post[index].selected) ? true : false //switch selected
+    selectCount += (post[index].selected) ? +1 : -1
+    this.setData({
+      post: post,
+      selectCount: selectCount,
+    })
+  },
+
+  toggleSelectAll: function () {
+    var that = this
+    var post = that.data.post
+    var selectCount = that.data.selectCount
+    var totalCount = post.length
+
+    // 已‘全选’则全部不选，否则全部选择
+    if (selectCount == totalCount) {
+      for (var item of post) item.selected = false
+      selectCount = 0
+    } else {
+      for (var item of post) item.selected = true
+      selectCount = totalCount
     }
-    console.log(that.data.postData)
-    // 本页面修改帖子后渲染
+
     that.setData({
-      nowShowData: that.data.postData.slice(0, page * pageSize)
+      post: post,
+      selectCount: selectCount,
     })
-    //云端更新
-    wx.cloud.callFunction({ 
-      name:'updateBy_id',
-      data:{
-        table: 'Post', 
-        id_name:'_id',
-        id_value: data._id,
-        mydata:{ 
-          contact_way: data.contact_way, 
-          money: data.money, 
-          headline: data.headline, 
-          content: data.content,
-          school_id: data.school_id,
-          post_type:data.post_type,
-          goods_type:data.goods_type
-        }
-      }
-    }).then(res=>{
-      console.log("updateResult:",res)
-    })
-    
-
-    // 本地修改帖子
-    for (i = 0; i < app.globalData.post.length; ++i) {
-      for (j = 0; j < app.globalData.post[i].length; ++j) {
-        if (edit_post_id == app.globalData.post[i][j].post_id) {
-          console.log(app.globalData.post[i][j])
-
-          app.globalData.post[i][j] = data
-
-          console.log(app.globalData.post)
-          console.log("editOne: Done")
-          return null;
-        }
-      }
-    }  
   },
-  goto_post: function (event) {
+
+  deleteSelected: function () {
     var that = this
-    var post_id = event.currentTarget.dataset.post_id
-    console.log(event)
-    
-    wx.navigateTo({
-      url: '../../post-show/post-show?post_id=' + post_id
-    })
-  }
-  /*
-  goto_modify: function() {
-    var that = this
-    wx.navigateTo({
-      url: './post_modify/post_modify?post_id='+that.data.curr_post_id,
-    })
-  }
-  */
+    if (that.data.selectCount) {
+      wx.showModal({
+        title: '删除收藏',
+        content: '确定删除吗？',
+        success(res) {
+          if (res.confirm) {
+            var post = that.data.post
+            var delPromise = []
+            for (var item of post) {
+              if (item.selected) {
+                var parm = {
+                  api: `/post/${item.postId}`,
+                  method: 'DELETE',
+                  name: `(删除帖子${item.postId})`,
+                }
+                delPromise.push(app.myRequest(parm))
+              }
+            }
+
+            Promise.all(delPromise).then(res => {
+              wx.showToast({
+                title: '删除成功',
+              })
+              console.log("[success] deleteSelected")
+              that.onGetPost();
+            }).catch(err => {
+              console.log("[fail] deleteSelected : ", err)
+            })
+          }
+        }
+      })
+    } else {
+      wx.showToast({
+        title: '请选择要删除的收藏',
+        icon: 'none',
+      })
+    }
+  },
+
 })

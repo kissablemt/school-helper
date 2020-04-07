@@ -1,54 +1,41 @@
 <!--miniprogram/pages/mylogs/post/post.wxml-->
+<view class='bar shadow' style='height:40px;width:100%;'>
+  <!-- 管理/完成 -->
+  <text class='icon-edit' style='position: absolute; right:5%; font-size:15px;' bindtap='toggleManage'>{{isManaging?'完成':'管理'}}</text>
+  <text class='icon-close' style='position: absolute; right:25%; font-size:15px;' wx:if="{{isManaging}}" bindtap='deleteSelected'>删除</text>
+  <view style='position: absolute; left:5%; font-size:15px;' wx:if="{{isManaging}}" bindtap='toggleSelectAll'>
+    全选
+    <text class='{{(selectCount == collection.length) ? "icon-check" : ""}}'></text>
+  </view>
+</view>
+
 <!-- wx:for -->
-<view class="cu-card article" style='position:relative;display:flex;flex-direction:row;align-items:center;' wx:for="{{nowShowData}}" wx:key="">
-  <view class="cu-item shadow" style='width:100%;' >
-    <!-- 右上角的编辑按钮 -->
-    <!-- 在不能直接把参数传给“deleteOne”，需要通过this.data保存 -->
-    <text class='icon-more' bindtap="showModal" data-target="bottomModal" style='position:absolute;right:5%;top:10%;border-radius: 5px;z-index:8888;font-size:20px;' data-curr_post_id="{{item.post_id}}"></text>
+<view class="cu-card article" style='position:relative;display:flex;flex-direction:row;align-items:center;' wx:for="{{post}}" wx:key="" wx:for-item="item">
 
-    <!-- 发帖人信息 -->
-    <view class="cu-list menu-avatar">
-      <view class="cu-item">
-        <image class="cu-avatar round" src="cloud://envir-i8vdp.656e-envir-i8vdp/avatar/{{item.open_id}}.jpg" mode="aspectFill"></image>
-        <view class="content flex-sub">
-          <view>{{nickname[item.open_id]}}</view>
-          <view class="text-gray text-sm flex justify-between">
-            {{item.date}}
-          </view>
-        </view>
-      </view>
-    </view>
+  <!-- 管理-选中后 -->
+  <view style='width:5%;font-size:18px;margin:0 4%;' wx:if="{{isManaging}}" data-index='{{index}}' bindtap='toggleSelect'>
+    <!-- 选项-未选中 -->
+    <text class='icon-square' wx:if="{{!item.selected}}"></text>
+    <!-- 选项-选中后 -->
+    <text class='icon-squarecheckfill' wx:else></text>
+  </view>
 
+  <view class="cu-item shadow" style='width:100%;'>
     <!-- 帖子内容 -->
-    <view class="content" bindtap='goto_post' data-post_id="{{item.post_id}}">
-
+    <view class="content" data-postId="{{item.postId}}" bindtap='gotoPost' style="margin-top:30rpx;">
+      <view class="text-gray text-sm flex justify-between" style='position:absolute; right:3%; width:185rpx'>
+        {{item.date}}
+      </view>
       <!-- 帖子首图 -->
-      <image src="cloud://envir-i8vdp.656e-envir-i8vdp/image/{{item.image[0]}}.jpg" mode="aspectFill"></image>
-
+      <image src="{{file_url + item.images[0].imageUrl}}" mode="aspectFill"></image>
       <!-- 帖子标题 -->
-      <view class="desc" style='width:70%;'>
+      <view class="desc" style='width:70%;margin:5%;text-size:20px;font-size:13px;font-weight:bold;'>
         <view>
-          <text>帖子标题：{{item.headline}}</text>
+          <text>{{item.headline}}</text>
         </view>
       </view>
     </view>
   </view>
-</view>
-<i-load-more tip="暂无数据" loading="{{ false }}"/>
 
-<!-- 编辑按钮触发后的modal显示 -->
-<view class="cu-modal bottom-modal {{modalName=='bottomModal'?'show':''}}" bindtap='hideModal' style='z-index:9999'>
-  <view class="cu-dialog">
-    <!-- “showModal”中传的参数在this.data中 -->
-    <!-- <view class="padding-xl" bindtap='editOne'> -->
-    <navigator url="./post_modify/post_modify?post_id={{curr_post_id}}">
-      <view class="padding-xl">
-        <text>修改</text>
-      </view>
-    </navigator>
-    
-    <view class="padding-xl solids-top" bindtap='deleteOne'>
-      <text>删除</text>
-    </view>
-  </view>
 </view>
+<i-load-more tip="暂无更多帖子" loading="{{ false }}" />
