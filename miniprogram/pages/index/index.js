@@ -3,7 +3,7 @@ const gPostType = 0
 
 Page({
   data: {
-    
+
     post_type_text: ["二手商品", "二手商品求购", "失物招领", "义捐活动"],
     goods_type_text: ["二手书", "二手车", "数码", "家电", "其他"],
     iconList: [{
@@ -41,7 +41,6 @@ Page({
     nowShowData: [],
     allData: [],
     //searchData: [],
-    nickname: "",
     headPortraitUrl: "",
   },
 
@@ -55,13 +54,13 @@ Page({
       imageUrl: app.globalData.file_url,
     })
 
-    setTimeout(function () {
+    setTimeout(function() {
       that.setData({
         isWaiting: false
       })
     }, 1500)
     this.pageInit()
-    
+
   },
   hidetabbar() { //隐藏底部导航栏
     wx.hideTabBar({
@@ -73,10 +72,12 @@ Page({
     });
   },
   onShow: function() {
+    var that = this
     this.judgeNewInfo() //show时判断是否有info
-    this.setData({
-      school_id: app.globalData.userInfo.schoolId
-
+    app.getUserInfo().then(res => {
+      that.setData({
+        headPortraitUrl: app.globalData.userInfo.headPortraitUrl
+      })
     })
   },
   onPullDownRefresh: function() { //---下拉刷新帖子，这只是刷新首页，即最新帖子，没有更新到app.globalData
@@ -90,27 +91,26 @@ Page({
       that.getData()
     }
 
-    setTimeout(function () {
+    setTimeout(function() {
       wx.stopPullDownRefresh()
     }, 500)
   },
   onReachBottom: function() {
     var that = this
 
-    that.getData()    
+    that.getData()
   },
   /** pageInit */
   pageInit: function() {
     var that = this
 
     // console.log('pageInit')
-    that.setData({
-      imageUrl: app.globalData.file_url,
-      nickname: app.globalData.userInfo.nickname,
-      schoolId: app.globalData.userInfo.schoolId,
-      open_id: app.globalData.userInfo.openId,
-      headPortraitUrl: app.globalData.userInfo.headPortraitUrl
-    })
+    if(app.globalData.userInfo) {
+      that.setData({
+        imageUrl: app.globalData.file_url,
+        headPortraitUrl: app.globalData.userInfo.headPortraitUrl
+      })
+    }
     that.getData()
   },
 
@@ -119,12 +119,9 @@ Page({
     var that = this
     let pageSize = that.data.pageSize
 
-    await wx.request({
-      url: app.globalData.api_url +'post/selectSecondHandList',
+    await wx.request({//游客
+      url: app.globalData.api_url + 'post/selectSecondHandList',
       method: 'GET',
-      header: {
-        'Authorization': 'Bearer ' + app.globalData.accessToken
-      },
       data: {
         pageNum: that.data.pageNum,
         pageSize: that.data.pageSize,
@@ -133,7 +130,7 @@ Page({
       success(res) {
         // console.log('getpostdata success!')
         // console.log(res.data)
-        if (res.data.code == 200) { 
+        if (res.data.code == 200) {
           if (res.data.data && res.data.data.length) {
             that.setData({
               allData: that.data.allData.concat(res.data.data),
@@ -146,7 +143,8 @@ Page({
             })
           }
         }
-      }, fail(msg) {
+      },
+      fail(msg) {
         // console.log(msg)
       }
     })
@@ -173,9 +171,18 @@ Page({
   },
 
   gotoMylogs() {
-    wx.navigateTo({
-      url: '/pages/mylogs/home/home',
-    })
+    if(app.globalData.accessToken) {
+      wx.navigateTo({
+        url: '/pages/mylogs/home/home',
+      })
+    } else {
+      setTimeout(function () {
+        wx.navigateTo({
+          url: '/pages/authorization/authorization',
+        })
+      }, 150)
+    }
+    
   },
 
   gotoMore() {
@@ -196,7 +203,7 @@ Page({
         inputKeyWord: e.detail.value
       })
     }
-    
+
   },
   /** 搜索 */
   search: function() {
@@ -212,30 +219,26 @@ Page({
   },
   judgeNewInfo: async function() { //判断是否有新消息
     var that = this
-
-    await wx.request({
-      url: app.globalData.api_url + 'message/selectAll',
+    var parm = {
+      api: '/message/selectAll',
       method: 'GET',
-      header: {
-        'Authorization': 'Bearer ' + app.globalData.accessToken
-      },
-      success(res) {
-        // console.log('getMessage success!')
-        // console.log(res.data)
-        if (res.data.code == 200) {
-          for (let i = 0; i < res.data.data.length; ++i) {
-            if (res.data.data[i].status == 1) {
-              that.setData({
-                hasNewInfo: true,
-              })
-              break;
-            }
-          }
+      name: '(获取个人的所有消息)',
+      alert: false,
+    }
+
+    var ret = await app.myRequest(parm);//无警告
+    if (ret.ok) {
+      var message = ret.result.data.data
+      for (var item of message)
+        if (item.status == 1) {
+          that.setData({
+            hasNewInfo: true,
+          })
+          break;
         }
-      }, fail(msg) {
-        console.log(msg)
-      }
-    })
+    } else {
+      // console.log(ret.msg)
+    }
   },
 
   selectSchool: function() {

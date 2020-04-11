@@ -19,7 +19,7 @@
 }
 
 .bgColor {
-  margin: 2%;
+  margin-top: 1rpx;
   padding: 3%;
   background-color: rgb(255, 255, 255);
 }
@@ -30,7 +30,7 @@
 }
 
 .showContent {
-  margin-left: 13%;
+  /* margin-left: 13%; */
 }
 
 .showFont{

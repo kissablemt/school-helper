@@ -4,11 +4,11 @@ const app = getApp()
 Page({
   data: {
     canIUse: wx.canIUse('button.open-type.getUserInfo'),
-    isWaiting: true,
+    isWaiting: false,
   },
 
-  onLoad: function() {
-    this.auth()
+  onLoad: function(options) {
+    // this.auth()
     // console.log(app.globalData)
   },
 
@@ -30,12 +30,14 @@ Page({
       that.setData({
         isWaiting: false
       })
+      that.login()
     }
   },
 
   // 登录成功=>跳转到index
   login: function(e) {
     var that = this
+    const eventChannel = this.getOpenerEventChannel()
     return new Promise(function(resolve, reject) {
       if (e.detail.signature) {
         // console.log('[success] 授权成功')
@@ -61,9 +63,11 @@ Page({
                     wx.setStorageSync('lastLoginTime', new Date());
                     console.log("[success] Login => AccessToken:", app.globalData.accessToken)
                     that.getUserInfo().then(res => {
-                      wx.switchTab({
-                        url: '../index/index',
-                      })
+                      // wx.switchTab({
+                      //   url: '../index/index',
+                      // })
+                      eventChannel.emit('loginCallback', { ok: true });
+                      wx.navigateBack({})
                       resolve(true)
                     })
                   } else {
@@ -129,7 +133,7 @@ Page({
               },
               fail(err) {
                 reject(err)
-              }
+              },
             })
           } else {
             reject(res)

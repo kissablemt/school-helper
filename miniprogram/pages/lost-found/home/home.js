@@ -18,7 +18,8 @@ Page({
     allData: [],
     hasNewInfo: false,
     nickname: "",
-    headPortraitUrl: ""
+    headPortraitUrl: "",
+    school_name: '东莞理工学院',
   },
 
   onLoad: function(options) { //初始化数据
@@ -28,7 +29,7 @@ Page({
       imageUrl: app.globalData.file_url
     })
 
-    setTimeout(function () {
+    setTimeout(function() {
       that.setData({
         isWaiting: false
       })
@@ -47,9 +48,9 @@ Page({
 
   onReachBottom: function() {
     var that = this
-    that.getData()  
+    that.getData()
   },
-  onPullDownRefresh: function () {
+  onPullDownRefresh: function() {
     var that = this
     if (!that.data.keyWord.length) {
       that.setData({
@@ -59,13 +60,13 @@ Page({
       that.getData()
     }
 
-    setTimeout(function () {
+    setTimeout(function() {
       wx.stopPullDownRefresh()
     }, 500)
   },
   pageInit: function() {
     var that = this
-    
+
     // console.log('pageInit')
     that.setData({
       imageUrl: app.globalData.file_url,
@@ -78,16 +79,13 @@ Page({
 
   },
   // 获取数据
-  getData: async function () {
+  getData: async function() {
     var that = this
     let pageSize = that.data.pageSize
 
-    await wx.request({
+    await wx.request({ //游客
       url: app.globalData.api_url + 'post/selectList',
       method: 'GET',
-      header: {
-        'Authorization': 'Bearer ' + app.globalData.accessToken
-      },
       data: {
         pageNum: that.data.pageNum,
         pageSize: that.data.pageSize,
@@ -110,12 +108,13 @@ Page({
             })
           }
         }
-      }, fail(msg) {
+      },
+      fail(msg) {
         // console.log(msg)
       }
     })
   },
-  
+
   gotoDetail: function(event) {
     var post_id = event.currentTarget.dataset.url
     // console.log(post_id)
@@ -123,7 +122,7 @@ Page({
       url: '/pages/post-show/post-show?post_id=' + post_id,
     })
   },
-  
+
   // 更换学校
   selectSchool: function() {
     wx.navigateTo({
@@ -132,7 +131,7 @@ Page({
   },
 
   /* 获取搜索框输入 */
-  searchInput: function (e) {
+  searchInput: function(e) {
     // console.log(e.detail.value)
     if (e.detail.value) {
       this.setData({
@@ -147,7 +146,7 @@ Page({
 
   },
   /** 搜索 */
-  search: function () {
+  search: function() {
     var that = this
     // console.log("search: ", that.data.inputKeyWord)
 
@@ -158,7 +157,7 @@ Page({
     })
     that.getData()
   },
-  
+
   gotoPublish: function() {
     var that = this
     wx.navigateTo({
@@ -170,31 +169,27 @@ Page({
       url: '/pages/mylogs/home/home',
     })
   },
-  judgeNewInfo: async function () { //判断是否有新消息
+  judgeNewInfo: async function() { //判断是否有新消息
     var that = this
-
-    await wx.request({
-      url: app.globalData.api_url + 'message/selectAll',
+    var parm = {
+      api: '/message/selectAll',
       method: 'GET',
-      header: {
-        'Authorization': 'Bearer ' + app.globalData.accessToken
-      },
-      success(res) {
-        // console.log('getMessage success!')
-        // console.log(res.data)
-        if (res.data.code == 200) {
-          for (let i = 0; i < res.data.data.length; ++i) {
-            if (res.data.data[i].status == 1) {
-              that.setData({
-                hasNewInfo: true,
-              })
-              break;
-            }
-          }
+      name: '(获取个人的所有消息)',
+      alert: false,
+    }
+
+    var ret = await app.myRequest(parm);//无警告
+    if (ret.ok) {
+      var message = ret.result.data.data
+      for (var item of message)
+        if (item.status == 1) {
+          that.setData({
+            hasNewInfo: true,
+          })
+          break;
         }
-      }, fail(msg) {
-        console.log(msg)
-      }
-    })
+    } else {
+      console.log(ret.msg)
+    }
   }
 })

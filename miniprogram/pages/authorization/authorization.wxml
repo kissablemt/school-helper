@@ -14,5 +14,5 @@
 </view>
 
 <view wx:else style='height:100%;width:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;'>
-  <image src="https://image.weilanwl.com/gif/loading-1.gif" mode="aspectFit" class="gif-white response" style="height:35%;padding-bottom:10%;"></image>
+  <image src="/images/loading.gif" mode="aspectFit" class="gif-white response" style="height:35%;padding-bottom:10%;"></image>
 </view>

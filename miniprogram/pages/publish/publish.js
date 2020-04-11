@@ -22,7 +22,7 @@ Page({
     canShowModalput: true,
   },
 
-  onLoad: function (options) {
+  onLoad: function(options) {
     var that = this
 
     if (options.post_type && options.goods_type) { //不是tabar处发布的
@@ -35,7 +35,7 @@ Page({
         goods_type: parseInt(options.goods_type),
       })
     } else {
-      
+
     }
     this.setData({
       imageWidth: wx.getSystemInfoSync().windowWidth * 0.9 * 0.3,
@@ -44,7 +44,7 @@ Page({
     })
   },
 
-  enlargeImage: function (event) {
+  enlargeImage: function(event) {
     var index = event.currentTarget.dataset.index // 需要设置data-index
     var that = this
     var image_list = []
@@ -59,7 +59,7 @@ Page({
     })
   },
 
-  deleteImage: function (e) {
+  deleteImage: function(e) {
     var that = this
     wx.showModal({
       title: '确认删除图片',
@@ -79,7 +79,7 @@ Page({
   },
 
   // 上传图片，获取data中的 imagePaths: []这两个字段
-  getImageFiles: function () {
+  getImageFiles: function() {
     var that = this
     // const db = wx.cloud.database()
     var that = this
@@ -91,7 +91,7 @@ Page({
       sizeType: ['original'], // 可以指定是原图还是压缩图，默认二者都有
       sourceType: ['album', 'camera'], // 可以指定来源是相册还是相机，默认二者都有
 
-      success: function (res) {
+      success: function(res) {
         if (res.tempFiles[0].size > maxImageSize) {
           // console.log("Image too large")
           wx.showToast({
@@ -119,49 +119,29 @@ Page({
       base64Image[i] = wx.getFileSystemManager().readFileSync(that.data.imagePaths[i], 'base64')
       if (i == 0) {
         imagesString = base64Image[i]
-      }
-      else {
+      } else {
         imagesString = imagesString + ',' + base64Image[i]
       }
     }
 
-    return new Promise((resolve, reject) => {
-      wx.request({
-        url: app.globalData.api_url+'post',
+    return new Promise(async(resolve, reject) => {
+      var parm = {
+        api: `/post`,
         method: 'POST',
-        header: {
-          'Authorization': 'Bearer ' + app.globalData.accessToken
-        },
         data: {
           headline: that.data.headline,
           content: that.data.content,
           money: that.data.price,
-          goodsType: that.data.goods_type+1,
-          postType: that.data.post_type+1,
+          goodsType: that.data.goods_type + 1,
+          postType: that.data.post_type + 1,
           images: imagesString
         },
-        success(res) {
-          if (res.data.code == 200) {
-            // console.log("success:", res)
-            wx.showToast({
-              title: '发布成功'
-            })
-            resolve(res)
-          } else {
-            resolve(res)
-            // console.log("success:", res)
-            wx.showToast({
-              title: '内容不符！失败'
-            })
-          }
-        }, fail(msg) {
-          reject(msg)
-          wx.showToast({
-            title: '系统异常'
-          })
-          // console.log(msg)
-        }
-      })
+        name: '(发布帖子)',
+        alert: true,
+      }
+      var ret = await app.myRequest(parm); //警告
+      console.log(ret.msg, ret.result)
+      resolve(ret)
     })
   },
 
@@ -194,7 +174,7 @@ Page({
       content: e.detail.value
     })
   },
-  changeSchool: function (event) { //改变学校
+  changeSchool: function(event) { //改变学校
     wx.navigateTo({
       url: '/pages/school/school?temp=1',
     })
@@ -205,9 +185,7 @@ Page({
     var info;
     var succ = false
 
-    if (app.globalData.userInfo.openId == null) {
-      info = "用户验证失败"
-    } else if (that.data.imagePaths.length == 0) {
+    if (that.data.imagePaths.length == 0) {
       info = "至少有一张图片"
     } else if (that.data.headline == "" || that.data.content == "" || (that.data.post_type != 2 && that.data.post_type != 3 && !that.data.price) || that.data.school_id == null) {
       info = "内容不能为空"
@@ -216,14 +194,31 @@ Page({
     }
 
     if (succ) {
-      await this.add_rec().then(res => {
-        // console.log('res:add_arc end')
-        if (res.data.code == 200) {
-          setTimeout(function () {
-            wx.navigateBack()
-          }, 1000)
+      var ret = await this.add_rec()
+
+      if (ret.error) {
+        wx.showToast({
+          title: '系统异常',
+          icon: 'none',
+        })
+      } else if (ret.ok) {
+        wx.showToast({
+          title: '发送成功',
+          icon: 'success',
+          duration: 1000,
+        })
+        setTimeout(function() {
+          wx.navigateBack()
+        }, 1000)
+      } else {
+        if (ret.result.data && ret.result.data.msg) {
+          var msg = ret.result.data.msg
+          wx.showToast({
+            title: msg,
+            icon: 'none',
+          })
         }
-      })
+      }
     } else {
       wx.showToast({
         title: info,
@@ -231,14 +226,14 @@ Page({
     }
 
   },
-  getInfo: function () {
+  getInfo: function() {
     if (this.data.canShowModalput == true) {
       this.setData({
         hiddenmodalput: false
       })
     }
   },
-  cancelM: function () {
+  cancelM: function() {
     var that = this
     this.setData({
       post_type: that.data.before_post_type,
@@ -246,7 +241,7 @@ Page({
       hiddenmodalput: true
     })
   },
-  comfirmP: function (e) {
+  comfirmP: function(e) {
     var that = this
     this.setData({
       before_post_type: that.data.post_type,

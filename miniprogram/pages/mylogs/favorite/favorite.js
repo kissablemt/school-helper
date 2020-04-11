@@ -23,12 +23,14 @@ Page({
       api: '/collection/selectAll',
       method: 'GET',
       name: '(获取个人的所有收藏)',
+      alert: false,
     }
 
-    var ret = await app.myRequest(parm)
+    var ret = await app.myRequest(parm);//无警告
     if (ret.ok) {
-      console.log(ret.msg, ret.result.data.data)
+      console.log(ret.msg, ret.result)
       var collection = ret.result.data.data
+      collection.reverse()
       for (var item of collection) item.date = utils.formatTime(new Date(item.date)).substr(0, 10)
       that.setData({
         collection: collection,
@@ -94,8 +96,10 @@ Page({
                   api: `/collection/${item.collectionId}`,
                   method: 'DELETE',
                   name: `(删除帖子${item.collectionId}收藏)`,
+                  alert: true,
                 }
-                delPromise.push(app.myRequest(parm))
+                let tmp = app.myRequest(parm);//警告
+                delPromise.push(tmp)
               }
             }
 
@@ -121,9 +125,9 @@ Page({
   },
 
   gotoPost: function(e) {
-    var post_id = e.currentTarget.dataset.post_id
+    var postId = e.currentTarget.dataset.post_id
     wx.navigateTo({
-      url: '/pages/post-show/post-show?post_id=' + post_id,
+      url: '/pages/post-show/post-show?post_id=' + postId,
     })
   },
 })

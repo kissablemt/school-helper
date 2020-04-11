@@ -1,6 +1,6 @@
 <!--miniprogram/pages/activity/home/home.wxml-->
 <view wx:if="{{isWaiting}}" style='height:100%;width:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;background-color: rgb(253, 254, 255);'>
-    <image src="https://image.weilanwl.com/gif/loading-1.gif" mode="aspectFit" class="gif-white response" style="height:35%;padding-bottom:10%;"></image>
+    <image src="/images/loading.gif" mode="aspectFit" class="gif-white response" style="height:35%;padding-bottom:10%;"></image>
 </view>
 
 
@@ -8,7 +8,7 @@
 <view class="top-box cu-bar search bg-white">
   <!-- 个人头像 -->
   <view>
-  <image class="cu-avatar round" wx:if="{{open_id}}" src='{{imageUrl + headPortraitUrl}}' bindtap='gotoMylogs'></image>
+  <image class="cu-avatar round" src='{{imageUrl + headPortraitUrl}}' bindtap='gotoMylogs'></image>
   <text class='icon-title text-red relative'  wx:if="{{hasNewInfo}}"></text>
   </view>
 
@@ -22,12 +22,12 @@
   <!--  bindtap='selectSchool' -->
   <!-- <text class="icon-triangledownfill"></text> -->
   <view class="action">
-    <image class="cu-avatar round" wx:if="{{school_id}}" src='/images/school_logo.jpg'></image>
+    <image class="cu-avatar round" src='/images/school_logo.jpg'></image>
   </view>
 </view>
 
 <view class='title-box'>
-  <image wx:if="{{school_id}}" src='/images/school_logo.jpg' mode='widthFix' style='border-radius:50px;overflow:hidden;width:20%;'></image>
+  <image src='/images/school_logo.jpg' mode='widthFix' style='border-radius:50px;overflow:hidden;width:20%;'></image>
   <view style='margin-left:20px;height:80%;'>
     <!-- 所在学校 -->
     <view style='font-size:14px;font-weight:bolder;' wx:if="{{school_name}}">

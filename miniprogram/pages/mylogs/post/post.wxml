@@ -22,7 +22,7 @@
 
   <view class="cu-item shadow" style='width:100%;'>
     <!-- 帖子内容 -->
-    <view class="content" data-postId="{{item.postId}}" bindtap='gotoPost' style="margin-top:30rpx;">
+    <view class="content" data-post_id="{{item.postId}}" bindtap='gotoPost' style="margin-top:30rpx;">
       <view class="text-gray text-sm flex justify-between" style='position:absolute; right:3%; width:185rpx'>
         {{item.date}}
       </view>

@@ -23,12 +23,14 @@ Page({
       api: '/post/selectAll',
       method: 'GET',
       name: '(获取用户发布的帖子)',
+      alert: true,
     }
 
-    var ret = await app.myRequest(parm)
+    var ret = await app.myRequest(parm);//警告
     if (ret.ok) {
-      console.log(ret.msg, ret.result.data.data)
+      console.log(ret.msg, ret.result)
       var post = ret.result.data.data
+      post.reverse()
       for (var item of post) item.date = utils.formatTime(new Date(item.date)).substr(0, 10)
       that.setData({
         post: post,
@@ -94,8 +96,10 @@ Page({
                   api: `/post/${item.postId}`,
                   method: 'DELETE',
                   name: `(删除帖子${item.postId})`,
+                  alert: true,
                 }
-                delPromise.push(app.myRequest(parm))
+                let tmp = app.myRequest(parm);//警告
+                delPromise.push(tmp)
               }
             }
 
@@ -119,4 +123,10 @@ Page({
     }
   },
 
+  gotoPost: function (e) {
+    var postId = e.currentTarget.dataset.post_id
+    wx.navigateTo({
+      url: '/pages/post-show/post-show?post_id=' + postId,
+    })
+  },
 })

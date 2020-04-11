@@ -1,4 +1,22 @@
 <!--miniprogram/pages/post-show/post-show.wxml-->
+<!-- 举报 输入框-->
+<view class='wrapper' hidden="{{hiddenReport}}">
+  <view class='shadow'>
+    <view class='popUp'>
+      <view class='title'>举报</view>
+      <form bindsubmit='confirmReport'>
+        <view class='content'>
+          <input type='text' name="reportMess" placeholder="请输入举报信息.." auto-focus=''></input>
+        </view>
+        <view class='reportFoot'>
+          <button bindtap='cancelReport' class='cancel-btn'>取消</button>
+          <button formType="submit" class='confirm-btn'>确定</button>
+        </view>
+      </form>
+    </view>
+  </view>
+</view>
+
 <view class='container'>
   <!-- 活动说明 图片轮播 -->
   <view class="cu-card dynamic">
@@ -7,23 +25,6 @@
       <view class="cu-tag bg-blue" style='position:absolute;right:2%;top:2%;border-radius: 5px;z-index:9999;'>{{typeName}}</view>
       <!-- 举报 -->
       <view class="cu-tag bg-orange" bindtap='gotoReport' style='position:absolute;right:2%;top:10%;border-radius: 5px;z-index:9999;'>举报</view>
-      <!-- 举报 输入框-->
-      <view class='wrapper' hidden="{{hiddenReport}}">
-        <view class='shadow'>
-          <view class='popUp'>
-            <view class='title'>举报</view>
-            <form bindsubmit='confirmReport'>
-              <view class='content'>
-                <input type='text' name="reportMess" placeholder="请输入举报信息.." auto-focus=''></input>
-              </view>
-              <view class='reportFoot'>
-                <button bindtap='cancelReport' class='cancel-btn'>取消</button>
-                <button formType="submit" class='confirm-btn'>确定</button>
-              </view>
-            </form>
-          </view>
-        </view>
-      </view>
 
       <!-- 发帖人信息 -->
       <view class="cu-list menu-avatar">
@@ -73,47 +74,44 @@
   <view class="cu-list menu-avatar comment solids-top" style='border-radius:8px;'>
     <!-- 标题 -->
     <view>
-      <view class="cu-bar bg-white margin-top">
+      <view class="cu-bar bg-white margin-top" style="border-top-left-radius: 10px;border-top-right-radius: 10px;">
         <view class="action">
           <text class="icon-title text-orange "></text> 全部回复
-        </view>
-        <view class="action">
-          <text bindtap="showModal" data-target="RadioModal">{{sortBy}}</text>
-          <text class='icon-unfold'></text>
         </view>
       </view>
     </view>
 
     <!-- 全部回复 -->
     <!-- wx：for -->
-    <view class="solids-top bgColor" wx:for="{{comment_data}}" wx:key="" wx:for-item="level" wx:for-index="levelIndex" data-parent_id="{{level.replyId}}" >
-      <view class="content showContent">
-        <view class="text-lg" style='margin:20rpx;' bindtap="replyComment" data-parent_id="{{level.replyId}}" data-to_open_id="{{level.fromOpenId}}">
-          <!-- <view class="text-lg" >{{level.fromOpenName}} : </view> -->
-          {{level.fromOpenName}} : {{level.content}}          
+    <view class="cu-list menu-avatar comment solids-top">
+      <view class="cu-item" wx:for="{{comment_data}}" wx:key="" wx:for-item="level" wx:for-index="levelIndex" bindtap="replyComment" data-parent_id="{{level.replyId}}" data-to_open_id="{{level.fromOpenId}}" data-from_open_name="{{level.fromOpenName}}" style="border-top:1px solid #F0F0F0;">
+        <view class="cu-avatar round" style="background-image:url({{imageUrl+level.fromHeadPortraitUrl}});"></view>
+        <view class="content">
+          <view class="text-grey" style="font-size:10px;">{{level.fromOpenName}}</view>
+          <view class="text-content" style="font-size:12px;">
+            {{level.content}}
+          </view>
+
           <view class="margin-top-sm flex justify-between">
             <view class="text-gray text-df">{{level.date}}</view>
-            <view class="text-pink text-df" wx:if="{{level.fromOpenId == openId && !level.hasButton}}" bindtap="deleteReply" data-reply_id="{{level.replyId}}">删除</view>
+            <view class="text-pink text-df toggleMore-button" wx:if="{{level.fromOpenId == openId}}" catchtap="deleteReply" data-reply_id="{{level.replyId}}" style="position:absolute;right:5%;top:30rpx;width:15%;">删除</view>
           </view>
-        </view>
-        
-        <!-- 这里的留言需要添加for循环和调样式 -->
-        <view  class='toggleMore-button' wx:if="{{level.hasButton}}"  style="color:black" bindtap='toggleMore' data-reply_id='{{level.replyId}}'>{{level.hideOverFlow ? '更多' : '隐藏'}}</view>
-        <view class="bg-grey padding-sm radius margin-top-sm text-sm" wx:if="{{level.replys.length > 0 && level.hasButton && !level.hideOverFlow}}" wx:for="{{level.replys}}" wx:key="" bindtap="replyComment" data-parent_id="{{level.replyId}}" data-to_open_id="{{item.fromOpenId}}">
-          <view>{{item.fromOpenName}} @ {{item.toOpenName}} :
-            <text style='word-break:break-all;'>{{item.content}}</text>
+
+          <view class='toggleMore-button text-gray' wx:if="{{level.hasButton}}" catchtap='toggleMore' data-reply_id='{{level.replyId}}'>{{level.hideOverFlow ? '更多' : '隐藏'}}</view>
+          <view class="bg-grey padding-sm radius margin-top-sm  text-sm" wx:if="{{level.replys.length > 0 && level.hasButton && !level.hideOverFlow}}" wx:for="{{level.replys}}" wx:key="" catchtap="replyComment" data-parent_id="{{level.replyId}}" data-to_open_id="{{item.fromOpenId}}" data-from_open_name="{{item.fromOpenName}}">
+            <view class="flex">
+              <view>{{item.fromOpenName}} @ {{item.toOpenName}} :</view>
+              <view class="flex-sub">{{item.content}}</view>
+            </view>
           </view>
-          <view class="margin-top-sm flex justify-between">
-            <view class="text-white text-df">{{item.date}}</view>
-            <view class="text-pink text-df" wx:if="{{item.fromOpenId == openId}}" bindtap="deleteReply" data-reply_id="{{item.replyId}}">删除</view>
-          </view>
+
         </view>
       </view>
     </view>
   </view>
 
   <i-load-more tip="暂无数据" loading="{{ false }}" />
-  
+
 </view>
 <!--
   @author 星星星
@@ -121,13 +119,15 @@
   @description  帖子不存在，不再展示提供发布评论, wx:if="{{post}}"
 -->
 <view class="cu-bar input foot" style='z-index:9999' wx:if="{{post}}">
-  <view class="action" bindtap='changeColor' wx:if="{{!isReplyComment}}">
+  <view class="action" bindtap='changeCollection' wx:if="{{!isReplyComment}}">
     <text class="icon-like text-grey" wx:if="{{!isFavourite}}"></text>
     <text class="icon-likefill text-red" wx:else></text>
   </view>
 
-  <input value="{{inputContent}}" class="solid-bottom" maxlength="300" cursor-spacing="10" bindinput='doInput' focus='{{isReplyComment}}'></input>
+  <button form-type='cancel' class="cu-btn bg-gray shadow-blur" bindtap='cancel' wx:if="{{isReplyComment}}" style="magrin-left:10px;">取消</button>
+  <input value="{{inputContent}}" class="solid-bottom" maxlength="300" cursor-spacing="10" bindinput='doInput' focus='{{isReplyComment}}' placeholder="{{tips}}"></input>
   <button form-type='submit' class="cu-btn bg-green shadow-blur" bindtap='submit'>发送</button>
+  
 </view>
 
 <view style='position:absolute;top:0;width:100%;height:100%;z-index:9998;' wx:if='{{isReplyComment}}' bindtap='replyPost'></view>

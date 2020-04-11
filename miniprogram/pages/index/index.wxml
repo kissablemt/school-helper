@@ -1,14 +1,14 @@
 <!--miniprogram/pages/index/index.wxml-->
 
 <view wx:if="{{isWaiting}}" style='height:100%;width:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;background-color: rgb(253, 254, 255);'>
-    <image src="https://image.weilanwl.com/gif/loading-1.gif" mode="aspectFit" class="gif-white response" style="height:35%;padding-bottom:10%;"></image>
+    <image src="/images/loading.gif" mode="aspectFit" class="gif-white response" style="height:35%;padding-bottom:10%;"></image>
 </view>
 
 <!-- 个人 搜索 学校 -->
 <view class="top-box cu-bar search bg-white">
   <!-- 个人头像 -->
   <view>
-  <image class="cu-avatar round" wx:if="{{open_id}}" src='{{imageUrl + headPortraitUrl}}' bindtap='gotoMylogs'></image>
+  <image class="cu-avatar round" src='{{imageUrl + headPortraitUrl}}' bindtap='gotoMylogs'></image>
   <text class='icon-title text-red relative'  wx:if="{{hasNewInfo}}"></text>
   </view>
   
@@ -26,7 +26,7 @@
     @description 去掉触发事件  bindtap='selectSchool' ，莞工校园版不需要
   -->
   <view class="action" >
-    <image class="cu-avatar round" wx:if="{{school_id}}" src='/images/school_logo.jpg'></image>
+    <image class="cu-avatar round" src='/images/school_logo.jpg'></image>
     <!-- <text class="icon-triangledownfill"></text> -->  <!-- 莞工校园版，不需要 -->
   </view>
 </view>
@@ -56,7 +56,7 @@
 
           <!-- 商品图 -->
           <view class="image" style='height:150px;overflow:hidden;'>
-            <image wx:if="{{item.images.length}}"  src="{{imageUrl + item.images[0].imageUrl}}" mode="widthFix"></image>
+            <image wx:if="{{item.images.length}}"  src="{{imageUrl + item.images[0].imageUrl}}" mode="widthFix" lazy-load="true"></image>
           </view>
 
           <!-- 商品名称 -->
