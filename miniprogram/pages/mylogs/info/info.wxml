@@ -67,7 +67,7 @@
       </view>
     </view>
     <view class="padding-xl">
-      <input bindinput="changeInput" placeholder="回复：{{current_item.fromOpenName}}" focus='true' value="{{inputValue}}"></input>
+      <input bindinput="changeInput" placeholder="回复：{{current_item.fromOpenName}}" focus="{{modalName=='DialogModal'?'true':''}}" value="{{inputValue}}"></input>
     </view>
     <view class="cu-bar bg-white justify-end">
       <view class="action">

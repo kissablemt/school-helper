@@ -113,47 +113,56 @@ Page({
   },
   // 删除自己的评论
   deleteReply: async function(e) {
-    var replyId = e.currentTarget.dataset.reply_id
-    console.log("deleteReply(): ", replyId)
+    var that = this
+    wx.showModal({
+      title: '删除评论',
+      content: '确定删除吗？',
+      async success(res) {
+        if (res.confirm) {
+          var replyId = e.currentTarget.dataset.reply_id
+          console.log("deleteReply(): ", replyId)
 
-    let deleteReplyPromise = new Promise(async(resolve, reject) => {
-      var parm = {
-        api: `/reply/${replyId.toString()}`,
-        method: 'DELETE',
-        data: {},
-        name: '(删除评论)',
-        alert: true,
+          let deleteReplyPromise = new Promise(async (resolve, reject) => {
+            var parm = {
+              api: `/reply/${replyId.toString()}`,
+              method: 'DELETE',
+              data: {},
+              name: '(删除评论)',
+              alert: true,
+            }
+            var ret = await app.myRequest(parm); //警告
+            if (ret.error) {
+              wx.showToast({
+                title: '系统异常',
+                icon: 'none',
+              })
+              reject(ret)
+            } else if (ret.ok) {
+              wx.showToast({
+                title: '删除成功',
+                icon: 'success',
+                duration: 1000,
+              })
+            } else {
+              wx.showToast({
+                title: '删除失败，请重试',
+                icon: 'none',
+              })
+            }
+            console.log(ret.msg, ret.result)
+            resolve(ret)
+          })
+          await deleteReplyPromise
+          that.setData({
+            pageNum: 1,
+            comment_data: [],
+            parentId: null,
+            isReplyComment: false
+          })
+          await that.getComment()
+        }
       }
-      var ret = await app.myRequest(parm); //警告
-      if (ret.error) {
-        wx.showToast({
-          title: '系统异常',
-          icon: 'none',
-        })
-        reject(ret)
-      } else if (ret.ok) {
-        wx.showToast({
-          title: '删除成功',
-          icon: 'success',
-          duration: 1000,
-        })
-      } else {
-        wx.showToast({
-          title: '删除失败，请重试',
-          icon: 'none',
-        })
-      }
-      console.log(ret.msg, ret.result)
-      resolve(ret)
     })
-    await deleteReplyPromise
-    this.setData({
-      pageNum: 1,
-      comment_data: [],
-      parentId: null,
-      isReplyComment: false
-    })
-    await this.getComment()
   },
   /**
    * @author 星星星
