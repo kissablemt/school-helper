@@ -412,7 +412,7 @@ Page({
     } else if (post_type == 3) {
       name = '失物招领'
     } else if (post_type == 4) {
-      name = '义捐活动'
+      name = '爱心活动'
     }
     return name;
   },

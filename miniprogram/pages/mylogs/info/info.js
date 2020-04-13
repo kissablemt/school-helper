@@ -10,9 +10,9 @@ Page({
 
     file_url: app.globalData.file_url,
   },
-  onLoad: function (options) { },
+  onLoad: function(options) {},
 
-  onShow: async function () {
+  onShow: async function() {
     await this.onGetMessage();
     // this.setData({
     //   message: wx.getStorageSync('message')
@@ -42,14 +42,14 @@ Page({
     }
   },
 
-  toggleManage: function (e) {
+  toggleManage: function(e) {
     var that = this
     that.setData({
       isManaging: that.data.isManaging == true ? false : true,
     })
   },
 
-  toggleSelect: function (e) {
+  toggleSelect: function(e) {
     var index = e.currentTarget.dataset.index
     var message = this.data.message
     var selectCount = this.data.selectCount
@@ -61,7 +61,7 @@ Page({
     })
   },
 
-  toggleSelectAll: function () {
+  toggleSelectAll: function() {
     var that = this
     var message = that.data.message
     var selectCount = that.data.selectCount
@@ -82,7 +82,7 @@ Page({
     })
   },
 
-  readAll: function () {
+  readAll: function() {
     var that = this
     var message = that.data.message
     var delPromise = []
@@ -108,7 +108,7 @@ Page({
     })
   },
 
-  deleteSelected: function () {
+  deleteSelected: function() {
     var that = this
     if (that.data.selectCount) {
       wx.showModal({
@@ -195,8 +195,9 @@ Page({
       postId: item.postId,
       content: inputValue,
       toOpenId: item.fromOpenId,
-      parentId: item.replyParentId,
     };
+    if (item.replyParentId != -1) data.parentId = item.replyParentId
+
 
     var parm = {
       api: `/reply`,
@@ -206,7 +207,7 @@ Page({
       alert: true,
     }
     console.log(parm)
-    var ret = await app.myRequest(parm);//警告
+    var ret = await app.myRequest(parm); //警告
     if (ret.error) {
       wx.showToast({
         title: '系统异常',
@@ -247,7 +248,7 @@ Page({
     }
   },
 
-  gotoPost: function (e) {
+  gotoPost: function(e) {
     var that = this
     var item = this.data.current_item
     var postId = item.postId
