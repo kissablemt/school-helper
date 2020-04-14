@@ -110,12 +110,11 @@ Page({
   onShow: function() {
     var that = this
     this.judgeNewInfo() //show时判断是否有info
-    if (app.globalData.userInfo.schoolId) {
-
+    app.getUserInfo().then(res => {
       that.setData({
-        school_id: app.globalData.userInfo.schoolId,
+        headPortraitUrl: app.globalData.userInfo.headPortraitUrl
       })
-    }
+    })
   },
 
   onUnload: function() {},
@@ -195,10 +194,19 @@ Page({
     })
     that.getData()
   },
-  gotoMylogs: function() {
-    wx.navigateTo({
-      url: '/pages/mylogs/home/home',
-    })
+  gotoMylogs() {
+    if (app.globalData.accessToken) {
+      wx.navigateTo({
+        url: '/pages/mylogs/home/home',
+      })
+    } else {
+      setTimeout(function () {
+        wx.navigateTo({
+          url: '/pages/authorization/authorization',
+        })
+      }, 150)
+    }
+
   },
   gotoDetail: function(event) {
     var post_id = event.currentTarget.dataset.url

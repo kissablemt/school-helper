@@ -38,12 +38,13 @@ Page({
   },
 
   onShow: function() {
+    var that = this
     this.judgeNewInfo() //show时判断是否有info
-    if (app.globalData.userInfo.schoolId) {
-      this.setData({
-        school_id: app.globalData.userInfo.schoolId
+    app.getUserInfo().then(res => {
+      that.setData({
+        headPortraitUrl: app.globalData.userInfo.headPortraitUrl
       })
-    }
+    })
   },
 
   onReachBottom: function() {
@@ -160,12 +161,20 @@ Page({
       url: '/pages/publish/publish?' + "post_type=" + that.data.post_type + "&goods_type=" + that.data.goods_type,
     })
   },
-  gotoMylogs: function() {
-    wx.navigateTo({
-      url: '/pages/mylogs/home/home',
-    })
-  },
+  gotoMylogs() {
+    if (app.globalData.accessToken) {
+      wx.navigateTo({
+        url: '/pages/mylogs/home/home',
+      })
+    } else {
+      setTimeout(function () {
+        wx.navigateTo({
+          url: '/pages/authorization/authorization',
+        })
+      }, 150)
+    }
 
+  },
   judgeNewInfo: async function() { //判断是否有新消息
     var that = this
     var parm = {

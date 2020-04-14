@@ -3,29 +3,30 @@
     <image src="/images/loading.gif" mode="aspectFit" class="gif-white response" style="height:35%;padding-bottom:10%;"></image>
 </view>
 
-<!-- 搜索框 -->
+<!-- 个人 搜索 学校 -->
 <view class="top-box cu-bar search bg-white">
   <!-- 个人头像 -->
   <view>
-  <image class="cu-avatar round" wx:if="{{open_id}}" src='{{imageUrl + headPortraitUrl}}' bindtap='gotoMylogs'></image>
+  <image class="cu-avatar round" src='{{imageUrl + headPortraitUrl}}' bindtap='gotoMylogs'></image>
   <text class='icon-title text-red relative'  wx:if="{{hasNewInfo}}"></text>
   </view>
+  
   <!-- 搜索 -->
   <view class="search-form round">
     <text class="icon-search"></text> 
     <input type="text" placeholder="搜索帖子" confirm-type="search" bindinput='searchInput'></input>
     <image class="cu-avatar round" src='/images/enter_logo.gif' bindtap='search'></image>
   </view>
+
+  <!-- 学校 -->
   <!--
     @author 星星星
-    @date 2019/5/17
-    @description  bindtap='selectSchool' 去除
-  
+    @data 2019/5/15
+    @description 去掉触发事件  bindtap='selectSchool' ，莞工校园版不需要
   -->
-  <!-- 学校 -->
   <view class="action" >
-    <image class="cu-avatar round" wx:if="{{school_id}}" src='/images/school_logo.jpg'></image>
-    <!-- <text class="icon-triangledownfill"></text> -->
+    <image class="cu-avatar round" src='/images/school_logo.jpg'></image>
+    <!-- <text class="icon-triangledownfill"></text> -->  <!-- 莞工校园版，不需要 -->
   </view>
 </view>
  
