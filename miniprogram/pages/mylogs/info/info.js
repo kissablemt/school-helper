@@ -197,6 +197,7 @@ Page({
       toOpenId: item.fromOpenId,
     };
     if (item.replyParentId != -1) data.parentId = item.replyParentId
+    else data.parentId = item.replyId
 
 
     var parm = {
