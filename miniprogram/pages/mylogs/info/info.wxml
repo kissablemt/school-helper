@@ -24,7 +24,9 @@
       <view class="cu-item">
         <text class='icon-title text-red' wx:if="{{item.status==1}}" style="position:absolute; right:5%;"></text>
         <view class="cu-avatar round lg" wx:if="{{item.fromHeadPortraitUrl}}" style="background-image:url({{file_url+item.fromHeadPortraitUrl}});"></view>
-        <view class="cu-avatar round lg" wx:if="{{!item.fromHeadPortraitUrl}}" style="background-image:url(/images/weChat_logo.jpg);"></view>
+        
+        <image class="cu-avatar round" wx:if="{{!item.fromHeadPortraitUrl}}" src='/images/weChat_logo.jpg' ></image>
+        
         <view class="content flex-sub">
           <view wx:if="{{item.fromOpenName}}">{{item.fromOpenName }}</view>
           <view wx:if="{{!item.fromOpenName}}">小助系统</view>
