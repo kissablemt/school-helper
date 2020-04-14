@@ -94,7 +94,7 @@
 
           <view class="margin-top-sm flex justify-between">
             <view class="text-gray text-df">{{level.date}}</view>
-            <view class="text-pink text-df toggleMore-button" wx:if="{{level.fromOpenId == openId && !level.hasButton}}" catchtap="deleteReply" data-reply_id="{{level.replyId}}" style="position:absolute;right:5%;top:30rpx;width:15%;">删除</view>
+            <view class="text-pink text-df toggleMore-button" wx:if="{{level.fromOpenId == openId}}" catchtap="deleteReply" data-reply_id="{{level.replyId}}" style="position:absolute;right:5%;top:30rpx;width:15%;">删除</view>
           </view>
 
           <view class='toggleMore-button text-gray' wx:if="{{level.hasButton}}" catchtap='toggleMore' data-reply_id='{{level.replyId}}'>{{level.hideOverFlow ? '更多' : '隐藏'}}</view>
