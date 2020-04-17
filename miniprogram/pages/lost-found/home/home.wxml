@@ -20,7 +20,7 @@
   <!-- bindtap='selectSchool' -->
   <!-- <text class="icon-triangledownfill"></text> -->
   <view class="action" >
-    <image class="cu-avatar round" wx:if="{{school_id}}" src='/images/school_logo.jpg'></image>
+    <image class="cu-avatar round" src='/images/school_logo.jpg'></image>
   </view>
 </view>
 
